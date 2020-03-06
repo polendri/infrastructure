@@ -4,3 +4,6 @@
   remote_user: root
   roles:
     - bootstrap
+- hosts: all
+  roles:
+    - ssh_hardening
