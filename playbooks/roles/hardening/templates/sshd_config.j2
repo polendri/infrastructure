@@ -1,0 +1,64 @@
+# {{ ansible_managed | comment }}
+
+# This is the sshd server system-wide configuration file. See sshd_config(5) for more information.
+
+# Basic configuration
+# ===================
+
+PermitRootLogin no
+
+Port {{ssh_server_port}}
+
+# Limit address family to the active network configuration.
+AddressFamily {{ 'any' if (network_ipv6_enable|bool) else 'inet' }}
+
+{% for address in ssh_listen_to -%}
+ListenAddress {{address}}
+{% endfor %}
+
+# Security configuration
+# ======================
+
+Protocol 2
+
+# Make sure sshd checks file modes and ownership before accepting logins. This prevents accidental misconfiguration.
+StrictModes yes
+
+# Categorize logs as authentication messages
+SyslogFacility AUTH
+
+# Use verbose logging to ensure the fingerprint of all SSH keys used for login are logged
+LogLevel VERBOSE
+
+# Authentication
+# --------------
+
+LoginGraceTime 30s
+MaxAuthTries 3
+
+# Enable PAM to enforce system wide rules
+UsePAM yes
+
+# Disable password-based authentication
+PasswordAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+
+# Network
+# -------
+
+# Disable TCP keep alive since it is spoofable. Use ClientAlive messages instead, they use the encrypted channel
+TCPKeepAlive no
+
+# Manage `ClientAlive..` signals via interval and maximum count. This will periodically check up to a `..CountMax` number of times within `..Interval` timeframe, and abort the connection once these fail.
+ClientAliveInterval 600
+ClientAliveCountMax 3
+
+# Disable tunneling
+PermitTunnel no
+
+# Disable forwarding TCP connections.
+AllowTcpForwarding no
+
+# Disable agent forwarding, since local agent could be accessed through forwarded connection.
+AllowAgentForwarding no

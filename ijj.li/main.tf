@@ -3,11 +3,11 @@ provider "digitalocean" {
 }
 
 resource "digitalocean_droplet" "ijj_li" {
-  image    = "ubuntu-18-04-x64"
+  image    = "ubuntu-19-10-x64"
   name     = "ijj.li"
   region   = "tor1"
   size     = "s-1vcpu-1gb"
-  ssh_keys = [var.digitalocean_ssh_key_id]
+  ssh_keys = var.digitalocean_ssh_keys
 }
 
 resource "digitalocean_floating_ip_assignment" "ijj_li" {

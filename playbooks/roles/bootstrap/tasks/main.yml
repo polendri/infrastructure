@@ -1,0 +1,31 @@
+---
+- name: "'users' group exists"
+  group:
+    name: users
+- name: "'sudo' group exists"
+  group:
+    name: sudo
+- name: "'sudo' group has passwordless sudo"
+  lineinfile:
+    dest: /etc/sudoers
+    regexp: "^%sudo"
+    line: "%sudo ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+- name: '"{{ user }}" user account exists'
+  user:
+    name: "{{ user }}"
+    group: users
+    groups: ["sudo"]
+    append: true
+- name: "SSH identity keys are authorized"
+  authorized_key:
+    user: "{{ user }}"
+    key: "{{ lookup('file', item) }}"
+  with_fileglob:
+    - "pubkeys/*"
+- name: "System is up-to-date"
+  apt:
+    update_cache: true
+    upgrade: safe
+- name: "System is rebooted"
+  reboot:

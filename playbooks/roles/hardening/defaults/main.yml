@@ -1,0 +1,9 @@
+---
+# Whether IPv6 is required
+network_ipv6_enable: false
+
+# The port on which sshd will listen
+ssh_server_port: 22
+
+# IP adresses on which sshd will listen
+ssh_listen_to: ["0.0.0.0"]

@@ -1,0 +1,10 @@
+---
+# Runs system upgrades and reboots.
+- hosts: all
+  tasks:
+    - name: "System is up-to-date"
+      apt:
+        update_cache: true
+        upgrade: safe
+    - name: "System is rebooted"
+      reboot:

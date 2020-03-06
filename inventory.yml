@@ -1,0 +1,9 @@
+# Ansible inventory
+
+all:
+  hosts:
+    ijj.li:
+  children:
+    cloud:
+      hosts:
+        ijj.li:

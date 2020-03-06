@@ -8,9 +8,9 @@ variable "digitalocean_token" {
 
 # -------------------
 
-variable "digitalocean_ssh_key_id" {
-  type        = number
-  description = "API ID of the paul@pshendry.com SSH key added to DigitalOcean"
+variable "digitalocean_ssh_keys" {
+  type        = list(number)
+  description = "API IDs of the SSH keys to add to DO droplets. Can be found by looking at API requests on the DO security settings page."
 }
 variable "ijj_li_floating_ip" {
   type        = string

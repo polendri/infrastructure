@@ -1,1 +1,4 @@
+# Terraform
 secrets.auto.tfvars
+/.terraform
+/terraform.tfstate

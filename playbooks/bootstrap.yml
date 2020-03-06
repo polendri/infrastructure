@@ -1,0 +1,6 @@
+---
+# Bootstraps a new host by adding users, securing SSH, applying updates, etc.
+- hosts: all
+  remote_user: root
+  roles:
+    - bootstrap
