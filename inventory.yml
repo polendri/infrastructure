@@ -3,7 +3,9 @@
 all:
   hosts:
     ijj.li:
+      ansible_user: psh
   children:
     cloud:
       hosts:
         ijj.li:
+          ansible_user: psh

@@ -62,3 +62,9 @@ AllowTcpForwarding no
 
 # Disable agent forwarding, since local agent could be accessed through forwarded connection.
 AllowAgentForwarding no
+
+# Miscellaneous configuration
+# ---------------------------
+
+# Enable SFTP
+Subsystem sftp internal-sftp -l INFO -f LOCAL6 -u 0027
