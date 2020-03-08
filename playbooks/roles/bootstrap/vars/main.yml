@@ -1,0 +1,3 @@
+---
+# The Ansible user to create on the remote host
+user: "psh"

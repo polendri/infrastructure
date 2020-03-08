@@ -1,5 +1,8 @@
 ---
-- name: sshd_config exists with root/600 permissions
+- name: "Create sshd_config with root/600 permissions"
+  become: yes
+  tags:
+    - provision
   template:
     src: "sshd_config.j2"
     dest: "/etc/ssh/sshd_config"

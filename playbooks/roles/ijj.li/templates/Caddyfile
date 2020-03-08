@@ -1,0 +1,57 @@
+# {{ ansible_managed | comment }}
+
+# Common configuration
+(common) {
+    tls "{{ letsencrypt_email | quote }}"
+    log / /var/log/caddy/access.log "{host} {remote} - {user} [{when}] \"{method} {uri} {proto}\" {status} {size}"
+}
+
+# Static site common configuration
+(static) {
+    gzip
+    header / {
+        Cache-Control "max-age=86400"
+    }
+    internal /.git
+}
+
+# Blog
+blog.ijj.li {
+    import common
+    import static
+    root static/blog.ijj.li
+    git github.com/pshendry/blog.ijj.li {
+        branch web
+        hook /hooks/push "{{ blog_webhook_secret | quote }}"
+    }
+}
+
+# CV website
+cv.ijj.li {
+    import common
+    import static
+    root static/cv.ijj.li
+    git github.com/pshendry/cv.ijj.li {
+        hook /hooks/push "{{ cv_webhook_secret | quote }}"
+    }
+    push /index.html /css/style.css /fonts/Icons.woff2
+}
+
+# IL-2 Intel
+il2.ijj.li {
+    import common
+    import static
+    root static/il2-intel
+    git github.com/pshendry/il2-intel {
+        branch web
+        hook /hooks/push "{{ il2_webhook_secret | quote }}"
+    }
+}
+
+# GoAccess stats
+stats.ijj.li {
+    import common
+    import static
+    basicauth / "{{ goaccess_username | quote }}" "{{ goaccess_password | quote }}"
+    root static/stats.ijj.li
+}

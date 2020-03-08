@@ -3,8 +3,8 @@ purposes, but also meant to be clear and readable enough to be useful as a refer
 
 ## Initial Configuration
 
-1. Install dependencies: `terraform`, `ansible`, and `terraform-inventory`.
-   - e.g. on Manjaro: `pamac install terraform ansible && pamac build terraform-inventory-git`
+1. Install dependencies: `terraform` and `ansible`.
+   - e.g. on Manjaro: `pamac install terraform ansible`
 1. Set up a Terraform dev environment. Either
    - Use the Terraform CLI
    - Create a [Terraform Cloud](https://app.terraform.io) account, and set up a workspace linked to this repo, or
@@ -21,3 +21,12 @@ purposes, but also meant to be clear and readable enough to be useful as a refer
 
 1. Invoke Terraform
    - `terraform apply`
+1. Boostrap newly-created hosts
+   - `ansible-playbook -i inventory.yml playbooks/bootstrap.yml`
+
+## TODO organize
+
+1. Copy over docs for setting up ijj.li GitHub webhooks
+1. Docs for calling `ansible-playbook` with `-i inventory.yml` and `--vault-password-file .vault_password`
+1. Docs for creating vault variables
+   - `ansible-vault encrypt_string --vault-password-file .vault_password SECRET --name NAME`

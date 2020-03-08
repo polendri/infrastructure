@@ -2,9 +2,9 @@
 # Runs system upgrades and reboots.
 - hosts: all
   tasks:
-    - name: "System is up-to-date"
+    - name: "Apply system upgrades"
       apt:
         update_cache: true
         upgrade: safe
-    - name: "System is rebooted"
+    - name: "Reboot system"
       reboot:

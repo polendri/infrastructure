@@ -1,9 +1,6 @@
 ---
-# Bootstraps a new host by adding users, securing SSH, applying updates, etc.
+# Bootstraps a new host by adding an Ansible user with SSH access.
 - hosts: all
   remote_user: root
   roles:
     - bootstrap
-- hosts: all
-  roles:
-    - ssh_hardening

@@ -1,0 +1,9 @@
+---
+# Provisions and deploys the site.
+#
+# Tags:
+#   - provision:  Provisions hosts
+#   - deploy:     Updates and deploys services
+- hosts: ijj.li
+  roles:
+    - ijj.li

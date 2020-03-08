@@ -1,3 +1,6 @@
+# Ansible
+/.vault_password
+
 # Terraform
 secrets.auto.tfvars
 /.terraform
