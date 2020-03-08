@@ -23,9 +23,3 @@
     key: "{{ lookup('file', item) }}"
   with_fileglob:
     - "pubkeys/*"
-- name: "Apply system updates"
-  apt:
-    update_cache: true
-    upgrade: safe
-- name: "System is rebooted"
-  reboot:
