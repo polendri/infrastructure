@@ -1,0 +1,16 @@
+---
+- name: "Start services"
+  tags:
+    - deploy
+    - start
+  command: "docker-compose up -d"
+- name: "Stop services"
+  tags:
+    - never
+    - stop
+  command: "docker-compose down"
+- name: "Restart services"
+  tags:
+    - never
+    - restart
+  command: "docker-compose restart"

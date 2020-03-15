@@ -1,36 +1,48 @@
 ---
-# Provisions and deploys services for the ijj.li host.
-#
-# Tags:
-#   - provision:  Provisions the host
-#   - deploy:     Updates and deploys services
 - name: "Provision the host"
   become: yes
   tags:
     - provision
   block:
-    - import_tasks: "tasks/packages/Ubuntu/podman.yml"
-- name: "Deploy Caddy container"
+    - name: "Update package cache"
+      apt:
+        update_cache: yes
+    - import_tasks: "tasks/packages/Ubuntu/docker.yml"
+- name: "Copy Docker Compose config"
+  tags:
+    - build
+    - deploy
+  template:
+    src: "docker-compose.yml"
+    dest: "{{host_root_dir}}/"
+- name: "Build service images"
+  tags:
+    - build
+  block:
+    - name: "Copy Caddy build files"
+      copy:
+        src: "../images/caddy"
+        dest: "{{host_image_dir}}"
+    - name: "Build container images"
+      command: "docker-compose build"
+- name: "Deploy service configuration"
   tags:
     - deploy
   block:
-    - name: "Create Caddy certs directory"
-      file:
-        path: "{{ host_data_dir }}/caddy/certs"
-        state: directory
-    - name: "Create Caddy logs directory"
-      file:
-        path: "{{ host_data_dir }}/caddy/logs"
-        state: directory
-    - name: "Create Caddy srv directory"
-      file:
-        path: "{{ host_data_dir }}/caddy/srv"
-        state: directory
-    - name: "Copy Caddy image"
-      shell: 'podman save localhost/caddy | gzip | ssh {{ansible_user}}@{{inventory_hostname}} "gunzip | sudo podman load caddy"'
-      delegate_to: localhost
     - name: "Copy Caddy configuration"
       template:
         src: "Caddyfile"
-        dest: "{{ host_config_dir }}/caddy/Caddyfile"
+        dest: "{{host_config_dir}}/caddy/"
         validate: "sudo podman run --rm -v %s:/etc/Caddyfile localhost/caddy -conf /etc/Caddyfile -validate"
+    - name: "Copy GoAccess configuration"
+      copy:
+        src: "goaccess.conf"
+        dest: "{{host_config_dir}}/goaccess/"
+    - name: "Create GoAccess geoip directory"
+      file:
+        path: "{{host_data_dir}}/goaccess/geoip"
+        state: directory
+    - name: "Copy GoAccess GeoIP database"
+      copy:
+        src: "GeoLite2-City.mmdb"
+        dest: "{{host_data_dir}}/goaccess/geoip/"

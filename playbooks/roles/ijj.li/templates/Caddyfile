@@ -1,9 +1,9 @@
-# {{ ansible_managed | comment }}
+# {{ansible_managed | comment}}
 
 # Common configuration
 (common) {
-    tls "{{ letsencrypt_email | quote }}"
-    log / /var/log/caddy/access.log "{host} {remote} - {user} [{when}] \"{method} {uri} {proto}\" {status} {size}"
+    tls "{{letsencrypt_email}}"
+    log / /var/log/caddy/access.log "{host} {remote} - {user} \"{method} {uri} {proto}\" {status} {size}"
 }
 
 # Static site common configuration
@@ -22,7 +22,7 @@ blog.ijj.li {
     root static/blog.ijj.li
     git github.com/pshendry/blog.ijj.li {
         branch web
-        hook /hooks/push "{{ blog_webhook_secret | quote }}"
+        hook /hooks/push "{{blog_webhook_secret}}"
     }
 }
 
@@ -32,7 +32,7 @@ cv.ijj.li {
     import static
     root static/cv.ijj.li
     git github.com/pshendry/cv.ijj.li {
-        hook /hooks/push "{{ cv_webhook_secret | quote }}"
+        hook /hooks/push "{{cv_webhook_secret}}"
     }
     push /index.html /css/style.css /fonts/Icons.woff2
 }
@@ -44,7 +44,7 @@ il2.ijj.li {
     root static/il2-intel
     git github.com/pshendry/il2-intel {
         branch web
-        hook /hooks/push "{{ il2_webhook_secret | quote }}"
+        hook /hooks/push "{{il2_webhook_secret}}"
     }
 }
 
@@ -52,6 +52,6 @@ il2.ijj.li {
 stats.ijj.li {
     import common
     import static
-    basicauth / "{{ goaccess_username | quote }}" "{{ goaccess_password | quote }}"
+    basicauth / "{{goaccess_username}}" "{{goaccess_password}}"
     root static/stats.ijj.li
 }

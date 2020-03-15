@@ -11,15 +11,15 @@
     regexp: "^%sudo"
     line: "%sudo ALL=(ALL) NOPASSWD: ALL"
     validate: "visudo -cf %s"
-- name: "Create '{{ user }}' user account exists"
+- name: "Create '{{user}}' user account exists"
   user:
-    name: "{{ user }}"
+    name: "{{user}}"
     group: users
     groups: ["sudo"]
     append: true
 - name: "Add SSH identity keys to authorized keys"
   authorized_key:
-    user: "{{ user }}"
-    key: "{{ lookup('file', item) }}"
+    user: "{{user}}"
+    key: "{{lookup('file', item)}}"
   with_fileglob:
     - "pubkeys/*"

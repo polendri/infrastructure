@@ -5,3 +5,6 @@
 secrets.auto.tfvars
 /.terraform
 /terraform.tfstate
+
+# Data files
+/playbooks/roles/ijj.li/files/GeoLite2-City.mmdb

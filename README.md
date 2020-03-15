@@ -1,7 +1,7 @@
 This repo holds deployment and application configuration for the personal servers I run. It's intended for my own
 purposes, but also meant to be clear and readable enough to be useful as a reference.
 
-## Initial Configuration
+## Initial configuration
 
 1. Install dependencies: `terraform` and `ansible`.
    - e.g. on Manjaro: `pamac install terraform ansible`
@@ -20,7 +20,13 @@ purposes, but also meant to be clear and readable enough to be useful as a refer
 1. Set up Ansible:
    1. Provide the Ansible Vault password in a file named `.vault_password` in the project root.
 
-## Provisioning Infrastructure
+## Acquire data
+
+1. `ijj.li` uses GoAccess, which uses a GeoIP database. Download `GeoLite2-City.mmdb` from
+   https://www.maxmind.com/en/accounts/186296/geoip/downloads and place it in the
+   `playbooks/roles/ijj.li/files` directory.
+
+## Provision infrastructure
 
 1. Invoke Terraform
    - `terraform apply`

@@ -1,11 +1,13 @@
-- name: "Install Kubic apt key"
+---
+- name: "Add Kubic apt key"
   apt_key:
     url: "https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_{{ansible_distribution_version}}/Release.key"
-- name: "Install Kubic apt repository"
+- name: "Add Kubic apt repository"
   apt_repository:
     repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ansible_distribution_version}}/ /"
 - name: "Install podman and recommended dependencies"
   apt:
+    update_cache: yes
     name:
       - dnsmasq
       - fuse-overlayfs
