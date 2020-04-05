@@ -1,0 +1,9 @@
+---
+- name: Start service
+  systemd:
+    name: "{{service_name}}"
+    state: started
+- name: Restart service
+  systemd:
+    name: "{{service_name}}"
+    state: restarted

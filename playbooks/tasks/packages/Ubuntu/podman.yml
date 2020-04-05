@@ -1,15 +1,25 @@
+# For details about rootless Podman setup, see
+# https://github.com/containers/libpod/blob/master/docs/tutorials/rootless_tutorial.md
 ---
-- name: "Add Kubic apt key"
-  apt_key:
-    url: "https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_{{ansible_distribution_version}}/Release.key"
-- name: "Add Kubic apt repository"
-  apt_repository:
-    repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ansible_distribution_version}}/ /"
-- name: "Install podman and recommended dependencies"
-  apt:
-    update_cache: yes
-    name:
-      - dnsmasq
-      - fuse-overlayfs
-      - podman
-      - slirp4netns
+- name: "Install Podman"
+  become: yes
+  block:
+    - name: "Add Kubic apt key"
+      apt_key:
+        url: "https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_{{ansible_distribution_version}}/Release.key"
+    - name: "Add Kubic apt repository"
+      apt_repository:
+        repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ansible_distribution_version}}/ /"
+    - name: "Allow unprivileged use of ping"
+      sysctl:
+        name: net.ipv4.ping_group_range
+        value: "0 2000000"
+        sysctl_set: yes
+    - name: "Install podman and recommended dependencies"
+      apt:
+        update_cache: yes
+        name:
+          - dnsmasq # For name resolution betwen containers
+          - fuse-overlayfs # For volume mounting
+          - slirp4netns
+          - podman

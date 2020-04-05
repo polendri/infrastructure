@@ -20,7 +20,7 @@ blog.ijj.li {
     import common
     import static
     root static/blog.ijj.li
-    git github.com/pshendry/blog.ijj.li {
+    git github.com/polendri/blog.ijj.li {
         branch web
         hook /hooks/push "{{blog_webhook_secret}}"
     }
@@ -31,7 +31,7 @@ cv.ijj.li {
     import common
     import static
     root static/cv.ijj.li
-    git github.com/pshendry/cv.ijj.li {
+    git github.com/polendri/cv.ijj.li {
         hook /hooks/push "{{cv_webhook_secret}}"
     }
     push /index.html /css/style.css /fonts/Icons.woff2
@@ -42,7 +42,7 @@ il2.ijj.li {
     import common
     import static
     root static/il2-intel
-    git github.com/pshendry/il2-intel {
+    git github.com/polendri/il2-intel {
         branch web
         hook /hooks/push "{{il2_webhook_secret}}"
     }

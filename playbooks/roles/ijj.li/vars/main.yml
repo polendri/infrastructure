@@ -12,7 +12,7 @@ host_data_dir: "{{host_root_dir}}/data"
 host_image_dir: "{{host_root_dir}}/images"
 
 # Email used for Let's Encrypt certificate expiry notifications
-letsencrypt_email: "paul@pshendry.com"
+letsencrypt_email: "paul@ijj.li"
 
 # GitHub webhook secret for pushing changes to blog.ijj.li
 blog_webhook_secret: !vault |
@@ -42,7 +42,7 @@ il2_webhook_secret: !vault |
   32303533376562616331383661396236353835333264653635623065373561316232
 
 # GoAccess login credentials
-goaccess_username: pshendry
+goaccess_username: psh
 goaccess_password: !vault |
   $ANSIBLE_VAULT;1.1;AES256
   31326465353736356235373034363331643962393964323939363532383764393135396664373366

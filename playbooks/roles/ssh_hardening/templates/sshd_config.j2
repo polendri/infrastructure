@@ -2,8 +2,8 @@
 
 # This is the sshd server system-wide configuration file. See sshd_config(5) for more information.
 
+
 # Basic configuration
-# ===================
 
 PermitRootLogin no
 
@@ -16,8 +16,8 @@ AddressFamily {{ 'any' if (network_ipv6_enable|bool) else 'inet' }}
 ListenAddress {{address}}
 {% endfor %}
 
+
 # Security configuration
-# ======================
 
 Protocol 2
 
@@ -30,8 +30,8 @@ SyslogFacility AUTH
 # Use verbose logging to ensure the fingerprint of all SSH keys used for login are logged
 LogLevel VERBOSE
 
+
 # Authentication
-# --------------
 
 LoginGraceTime 30s
 MaxAuthTries 3
@@ -44,8 +44,8 @@ PasswordAuthentication no
 PermitEmptyPasswords no
 ChallengeResponseAuthentication no
 
+
 # Network
-# -------
 
 # Disable TCP keep alive since it is spoofable. Use ClientAlive messages instead, they use the encrypted channel
 TCPKeepAlive no
@@ -63,8 +63,8 @@ AllowTcpForwarding no
 # Disable agent forwarding, since local agent could be accessed through forwarded connection.
 AllowAgentForwarding no
 
+
 # Miscellaneous configuration
-# ---------------------------
 
 # Enable SFTP
 Subsystem sftp internal-sftp -l INFO -f LOCAL6 -u 0027

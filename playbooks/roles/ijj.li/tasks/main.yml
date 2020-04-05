@@ -1,31 +1,17 @@
 ---
-- name: "Provision the host"
-  become: yes
+- name: "Configure system"
   tags:
     - provision
   block:
-    - name: "Update package cache"
-      apt:
-        update_cache: yes
-    - import_tasks: "tasks/packages/Ubuntu/docker.yml"
-- name: "Copy Docker Compose config"
-  tags:
-    - build
-    - deploy
-  template:
-    src: "docker-compose.yml"
-    dest: "{{host_root_dir}}/"
-- name: "Build service images"
-  tags:
-    - build
-  block:
-    - name: "Copy Caddy build files"
-      copy:
-        src: "../images/caddy"
-        dest: "{{host_image_dir}}"
-    - name: "Build container images"
-      command: "docker-compose build"
-- name: "Deploy service configuration"
+    # I'd prefer to authorize privileged port usage at the time of launching the service (e.g. using systemd socket
+    # units, or using authbind), but it's so much added complexity for seemingly very little benefit for a single-user
+    # system.
+    - name: "Reduce privileged ports from 0-1023 down to 0-79"
+      become: yes
+      sysctl:
+        name: net.ipv4.ip_unprivileged_port_start
+        value: "80"
+- name: "Create service config and data files/directories"
   tags:
     - deploy
   block:
@@ -33,7 +19,19 @@
       template:
         src: "Caddyfile"
         dest: "{{host_config_dir}}/caddy/"
-        validate: "sudo podman run --rm -v %s:/etc/Caddyfile localhost/caddy -conf /etc/Caddyfile -validate"
+        validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
+    - name: "Create Caddy certs directory"
+      file:
+        path: "{{host_data_dir}}/caddy/certs"
+        state: directory
+    - name: "Create Caddy logs directory"
+      file:
+        path: "{{host_data_dir}}/caddy/logs"
+        state: directory
+    - name: "Create Caddy srv directory"
+      file:
+        path: "{{host_data_dir}}/caddy/srv"
+        state: directory
     - name: "Copy GoAccess configuration"
       copy:
         src: "goaccess.conf"
@@ -42,7 +40,42 @@
       file:
         path: "{{host_data_dir}}/goaccess/geoip"
         state: directory
+    - name: "Create GoAccess report directory"
+      file:
+        path: "{{host_data_dir}}/goaccess/report"
+        state: directory
     - name: "Copy GoAccess GeoIP database"
       copy:
         src: "GeoLite2-City.mmdb"
         dest: "{{host_data_dir}}/goaccess/geoip/"
+- name: "Start services"
+  tags:
+    - deploy
+  block:
+    - name: "Create web pod"
+      import_role:
+        name: podman
+      vars:
+        pod_name: web
+        pod_create_args: -p 80:8080 -p 443:8443
+        pod_containers:
+          - name: caddy
+            image: quay.io/indeliblesoftware/caddy
+            run_args: "--cap-drop all \
+              --read-only \
+              --ulimit nofile=16384 \
+              -v /home/psh/config/caddy/Caddyfile:/etc/Caddyfile \
+              -v /home/psh/data/caddy/certs:/etc/ssl/caddy \
+              -v /home/psh/data/caddy/logs:/var/log/caddy \
+              -v /home/psh/data/caddy/srv:/srv \
+              --tmpfs /run \
+              --tmpfs /tmp"
+            cmd_args: -agree
+        host_mounts:
+          - "/home/{{ansible_user}}/config"
+          - "/home/{{ansible_user}}/data"
+        uid: "1"
+        gid: "1"
+        service_ports:
+          - 80
+          - 443

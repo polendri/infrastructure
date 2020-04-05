@@ -1,0 +1,3 @@
+---
+# systemd service name
+service_name: "pod-{{pod_name}}.service"

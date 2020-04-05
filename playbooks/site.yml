@@ -7,4 +7,3 @@
 - hosts: ijj.li
   roles:
     - ijj.li
-    - docker-compose

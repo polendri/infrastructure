@@ -1,6 +1,7 @@
 ---
 # Bootstraps a new host by adding an Ansible user with SSH access.
 - hosts: all
-  remote_user: root
   roles:
     - bootstrap
+  vars:
+    ansible_user: root

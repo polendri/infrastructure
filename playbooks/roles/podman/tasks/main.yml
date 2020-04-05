@@ -1,0 +1,117 @@
+---
+- name: "Prepare system configuration"
+  tags:
+    - provision
+  block:
+    - import_tasks: "tasks/packages/Ubuntu/podman.yml"
+    - name: "Add Ansible user to subuid file"
+      become: yes
+      lineinfile:
+        path: /etc/subuid
+        regexp: "^{{ansible_user}}:.*"
+        line: "{{ansible_user}}:100000:65536"
+        create: yes
+        mode: "0644"
+        owner: root
+        group: root
+    - name: "Add Ansible user to subgid file"
+      become: yes
+      lineinfile:
+        path: /etc/subgid
+        regexp: "^{{ansible_user}}:.*"
+        line: "{{ansible_user}}:100000:65536"
+        create: yes
+        mode: "0644"
+        owner: root
+        group: root
+    - name: "Allow user to run systemd services at boot"
+      become: yes
+      # This command should work but it fails with "Could not enable linger: No such file or directory".
+      # What follows does the same thing manually
+      # command: "loginctl enable-linger {{ansible_user}}"
+      block:
+        - name: "Create /var/lib/systemd/linger directory"
+          file:
+            path: /var/lib/systemd/linger
+            state: directory
+        - name: "Create linger file for user '{{ansible_user}}'"
+          file:
+            path: "/var/lib/systemd/linger/{{ansible_user}}"
+            state: touch
+    - name: "Set permissions on config/ and data/ directories"
+      command: "podman unshare chown -R {{uid}}:{{gid}} {{item}}"
+      when: "(host_mounts | length > 0)"
+      loop: "{{host_mounts}}"
+- name: "Create '{{pod_name}}' pod and containers"
+  tags:
+    - deploy
+  block:
+    - name: "Check for existing pod"
+      command: "podman pod exists {{pod_name}}"
+      register: pod_exists
+      changed_when: False
+      failed_when: pod_exists.rc > 1
+    - name: "Remove existing pod"
+      command: "podman pod rm -f {{pod_name}}"
+      when: pod_exists is succeeded
+    - name: "Create pod"
+      command: "podman pod create --name {{pod_name}} --hostname {{pod_name}} {{pod_create_args}}"
+    - name: "Create containers for pod"
+      command: "podman create \
+        --pod {{pod_name}} \
+        --name {{item.name}} \
+        --user {{uid}}:{{gid}} \
+        {{item.run_args}} \
+        {{item.image}} \
+        {{item.cmd_args}}"
+      loop: "{{pod_containers}}"
+- name: "Configure systemd services for '{{pod_name}}'"
+  tags:
+    - deploy
+  block:
+    - name: "Create user-level systemd unit directory"
+      file:
+        path: "{{systemd_unit_dir}}"
+        state: directory
+    - name: "Generate systemd service units"
+      command: "podman generate systemd --files --name {{pod_name}}"
+      changed_when: False
+      register: generate_service_units
+    - name: "Copy service units to systemd unit directory"
+      command: "mv {{item}} {{systemd_unit_dir}}"
+      loop: "{{generate_service_units.stdout_lines}}"
+    - name: "Reload systemd daemon"
+      systemd:
+        daemon_reload: yes
+        scope: user
+    - name: "Enable and start systemd service"
+      systemd:
+        name: "{{service_name}}"
+        enabled: yes
+        state: started
+        scope: user
+- name: "Update {{pod_name}} service images"
+  tags:
+    - never
+    - update
+  command: "podman pull {{item.image}}"
+  notify: Restart service
+  loop: "{{pod_containers}}"
+- name: "Remove {{pod_name}} service"
+  tags:
+    - never
+    - withdraw
+  block:
+    - name: "Disable and stop {{pod_name}} service"
+      service:
+        name: "{{service_name}}"
+        enabled: no
+        state: stopped
+    - name: "Delete systemd service file for {{pod_name}} pod"
+      file:
+        path: "{{service_files_dir}}/{{service_name}}"
+        state: absent
+    - name: "Reload systemd daemon"
+      systemd:
+        daemon_reload: yes
+        scope: user

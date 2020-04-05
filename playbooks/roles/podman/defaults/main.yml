@@ -1,0 +1,6 @@
+---
+gid: 1
+host_mounts: []
+service_ports: []
+systemd_unit_dir: "/home/{{ansible_user}}/.config/systemd/user"
+uid: 1
