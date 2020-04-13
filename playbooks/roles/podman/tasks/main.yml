@@ -141,6 +141,14 @@
         state: absent
       changed_when: False
       loop: "{{generate_service_units.stdout_lines}}"
+- name: "Configure firewall for '{{pod_name}}' pod"
+  tags:
+    - deploy
+  become: yes
+  import_role:
+    name: firewall
+  vars:
+    ports: "{{service_ports}}"
 - name: "Remove '{{pod_name}}' pod"
   tags:
     - never

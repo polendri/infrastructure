@@ -113,6 +113,6 @@
           - "{{host_config_dir}}/goaccess"
           - "{{host_data_dir}}/goaccess"
         service_ports:
-          - 80
-          - 443
-          - 7890
+          - 80/tcp
+          - 443/tcp
+          - 7890/tcp

@@ -20,7 +20,7 @@ Runs and manages a Podman pod.
 | `pod_containers.image`    | Container image name                                                 |                    |
 | `pod_containers.run_args` | `podman run` args                                                    |                    |
 | `pod_containers.cmd_args` | `podman run` command args                                            |                    |
-| `service_ports`           | Array of exposed port numbers (to be opened in firewall)             | `[]`               |
+| `service_ports`           | Array of exposed port numbers to be opened in firewall, ex: 80/tcp   | `[]`               |
 | `host_mounts`             | Array of paths of host-mounted volumes (to have permissions updated) | `[]`               |
 | `pod_uid`                 | UID of user executing in container                                   | `1`                |
 | `pod_gid`                 | GID of user executing in container                                   | `1`                |
