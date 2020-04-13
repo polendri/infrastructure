@@ -1,7 +1,7 @@
 This repo holds deployment and application configuration for the personal servers I run. It's intended for my own
 purposes, but also meant to be clear and readable enough to be useful as a reference.
 
-## Admin environment configuration
+## Configure admin environment
 
 1. Install dependencies: `terraform` and `ansible`.
    - e.g. on Manjaro: `pamac install terraform ansible`
@@ -18,7 +18,8 @@ purposes, but also meant to be clear and readable enough to be useful as a refer
    1. Initialize Terraform
       - `terraform init`
 1. Set up Ansible:
-   1. Provide the Ansible Vault password in a file named `.vault_password` in the project root.
+   1. Provide the Ansible Vault password in a file named `.vault_password` in the project root. Ensure its permissions
+      are set to `0600`.
 
 ## Acquire data
 
@@ -45,9 +46,26 @@ automatically redeploy on push. These webhooks are already configured and the se
 - Add hook for https://cv.ijj.li/hooks/push (https://github.com/pshendry/cv.ijj.li/settings/hooks/)
 - Add hook for https://il2.ijj.li/hooks/push (https://github.com/pshendry/il2.ijj.li/settings/hooks/)
 
-## TODO organize
+## Execute Ansible playbooks
 
-1. Copy over docs for setting up ijj.li GitHub webhooks
-1. Docs for calling `ansible-playbook` with `-i inventory.yml` and `--vault-password-file .vault_password`
-1. Docs for creating vault variables
-   - `ansible-vault encrypt_string --vault-password-file .vault_password SECRET --name NAME`
+To fully provision and deploy the site, run the `site.yml` playbook without tags:
+
+```
+ansible-playbook -i inventory.yml --vault-password-file .vault_password playbooks/site.yml
+```
+
+Other tags available are:
+
+- `provision`: Install packages and configure hosts
+- `deploy`: Deploy services on hosts
+- `update`: Update services on hosts
+- `upgrade`: Upgrade host systems and update services on hosts
+
+### Storing secrets in Ansible playbooks
+
+Run a command like the following to generate an encrypted string for a secret, suitable for pasting into an Ansible
+YAML file:
+
+```
+ansible-vault encrypt_string --vault-password-file .vault_password SECRET --name NAME
+```
