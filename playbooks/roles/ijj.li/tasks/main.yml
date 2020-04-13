@@ -78,7 +78,7 @@
         user: "{{service_user}}"
         group: "{{service_group}}"
         pod_name: web
-        pod_create_args: -p 80:8080 -p 443:8443
+        pod_create_args: -p 80:8080 -p 443:8443 -p 7890:7890
         pod_uid: "1"
         pod_gid: "1"
         pod_containers:
@@ -87,16 +87,32 @@
             run_args: "--cap-drop all \
               --read-only \
               --ulimit nofile=16384 \
-              -v {{host_config_dir}}/caddy/Caddyfile:/etc/Caddyfile \
+              -v {{host_config_dir}}/caddy/Caddyfile:/etc/Caddyfile:ro \
               -v {{host_data_dir}}/caddy/certs:/etc/ssl/caddy \
               -v {{host_data_dir}}/caddy/logs:/var/log/caddy \
               -v {{host_data_dir}}/caddy/srv:/srv \
+              -v {{host_data_dir}}/goaccess/report:/srv/static/stats.ijj.li:ro
               --tmpfs /run \
               --tmpfs /tmp"
             cmd_args: -agree
+          - name: goaccess
+            image: docker.io/allinurl/goaccess
+            run_args: "--cap-drop all \
+              --read-only \
+              -v {{host_config_dir}}/goaccess:/srv/data \
+              -v {{host_data_dir}}/goaccess/geoip:/srv/geoip \
+              -v {{host_data_dir}}/goaccess/report:/srv/report \
+              -v {{host_data_dir}}/caddy/certs/acme/acme-v02.api.letsencrypt.org/sites/stats.ijj.li:/srv/certs:ro
+              -v {{host_data_dir}}/caddy/logs:/srv/logs:ro \
+              --tmpfs /run \
+              --tmpfs /tmp"
+            cmd_args: --config-file=/srv/data/goaccess.conf
         host_mounts:
           - "{{host_config_dir}}/caddy"
           - "{{host_data_dir}}/caddy"
+          - "{{host_config_dir}}/goaccess"
+          - "{{host_data_dir}}/goaccess"
         service_ports:
           - 80
           - 443
+          - 7890
