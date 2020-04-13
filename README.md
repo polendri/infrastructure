@@ -1,7 +1,7 @@
 This repo holds deployment and application configuration for the personal servers I run. It's intended for my own
 purposes, but also meant to be clear and readable enough to be useful as a reference.
 
-## Initial configuration
+## Admin environment configuration
 
 1. Install dependencies: `terraform` and `ansible`.
    - e.g. on Manjaro: `pamac install terraform ansible`
@@ -32,6 +32,18 @@ purposes, but also meant to be clear and readable enough to be useful as a refer
    - `terraform apply`
 1. Boostrap newly-created hosts
    - `ansible-playbook -i inventory.yml playbooks/bootstrap.yml`
+
+## Configure services
+
+### Set up webhooks for websites served by Caddy
+
+Some sites served by Caddy use GitHub as their Git repo and are configured to receive GitHub webhooks on push to
+automatically redeploy on push. These webhooks are already configured and the secrets are stored in Vault-encrypted
+`*_webhook_secret` variables, but they were originally set up like so:
+
+- Add hook for https://blog.ijj.li/hooks/push (https://github.com/pshendry/blog.ijj.li/settings/hooks/)
+- Add hook for https://cv.ijj.li/hooks/push (https://github.com/pshendry/cv.ijj.li/settings/hooks/)
+- Add hook for https://il2.ijj.li/hooks/push (https://github.com/pshendry/il2.ijj.li/settings/hooks/)
 
 ## TODO organize
 

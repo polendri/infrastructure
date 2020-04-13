@@ -4,47 +4,46 @@
     - provision
   block:
     - import_tasks: "tasks/packages/Ubuntu/podman.yml"
-    - name: "Add Ansible user to subuid file"
+    - name: "Install ACL package for using Ansible with unprivileged users"
+      become: yes
+      package:
+        name: acl
+        state: present
+    - name: "Add user to subuid file"
       become: yes
       lineinfile:
         path: /etc/subuid
-        regexp: "^{{ansible_user}}:.*"
-        line: "{{ansible_user}}:100000:65536"
+        regexp: "^{{user}}:.*"
+        line: "{{user}}:100000:65536"
         create: yes
         mode: "0644"
-        owner: root
-        group: root
-    - name: "Add Ansible user to subgid file"
+    - name: "Add user to subgid file"
       become: yes
       lineinfile:
         path: /etc/subgid
-        regexp: "^{{ansible_user}}:.*"
-        line: "{{ansible_user}}:100000:65536"
+        regexp: "^{{user}}:.*"
+        line: "{{user}}:100000:65536"
         create: yes
         mode: "0644"
-        owner: root
-        group: root
     - name: "Allow user to run systemd services at boot"
       become: yes
       # This command should work but it fails with "Could not enable linger: No such file or directory".
       # What follows does the same thing manually
-      # command: "loginctl enable-linger {{ansible_user}}"
+      # command: "loginctl enable-linger {{user}}"
       block:
         - name: "Create /var/lib/systemd/linger directory"
           file:
             path: /var/lib/systemd/linger
             state: directory
-        - name: "Create linger file for user '{{ansible_user}}'"
+        - name: "Create linger file for user '{{user}}'"
           file:
-            path: "/var/lib/systemd/linger/{{ansible_user}}"
+            path: "/var/lib/systemd/linger/{{user}}"
             state: touch
-    - name: "Set permissions on config/ and data/ directories"
-      command: "podman unshare chown -R {{uid}}:{{gid}} {{item}}"
-      when: "(host_mounts | length > 0)"
-      loop: "{{host_mounts}}"
 - name: "Create '{{pod_name}}' pod and containers"
   tags:
     - deploy
+  become: yes
+  become_user: "{{user}}"
   block:
     - name: "Check for existing pod"
       command: "podman pod exists {{pod_name}}"
@@ -53,51 +52,96 @@
       failed_when: pod_exists.rc > 1
     - name: "Remove existing pod"
       command: "podman pod rm -f {{pod_name}}"
-      when: pod_exists is succeeded
+      when: pod_exists.rc == 0
     - name: "Create pod"
       command: "podman pod create --name {{pod_name}} --hostname {{pod_name}} {{pod_create_args}}"
     - name: "Create containers for pod"
       command: "podman create \
         --pod {{pod_name}} \
         --name {{item.name}} \
-        --user {{uid}}:{{gid}} \
+        --user {{pod_uid}}:{{pod_gid}} \
         {{item.run_args}} \
         {{item.image}} \
         {{item.cmd_args}}"
       loop: "{{pod_containers}}"
+    - name: "Set permissions on host-mounted directories"
+      command: "podman unshare chown -R {{pod_uid}}:{{pod_gid}} {{item}}"
+      when: "(host_mounts | length > 0)"
+      loop: "{{host_mounts}}"
+- name: "Update '{{pod_name}}' pod images"
+  tags:
+    - never
+    - update
+  become: yes
+  become_user: "{{user}}"
+  command: "podman pull {{item.image}}"
+  notify: Restart service
+  loop: "{{pod_containers}}"
 - name: "Configure systemd services for '{{pod_name}}'"
   tags:
     - deploy
+    - update
   block:
-    - name: "Create user-level systemd unit directory"
+    - name: "Create Ansible user systemd unit directory"
       file:
         path: "{{systemd_unit_dir}}"
         state: directory
     - name: "Generate systemd service units"
-      command: "podman generate systemd --files --name {{pod_name}}"
+      become: yes
+      become_user: "{{user}}"
+      command:
+        chdir: "/home/{{user}}"
+        cmd: "podman generate systemd --files --name {{pod_name}}"
       changed_when: False
       register: generate_service_units
-    - name: "Copy service units to systemd unit directory"
-      command: "mv {{item}} {{systemd_unit_dir}}"
+    - name: "Set service units to run as user"
+      become: yes
+      replace:
+        path: "{{item}}"
+        regexp: "^\\[Service\\]$"
+        replace: "[Service]\nUser={{user}}\nGroup={{group}}"
       loop: "{{generate_service_units.stdout_lines}}"
+      changed_when: False
+    - name: "Remove comments from service units"
+      become: yes
+      replace:
+        path: "{{item}}"
+        regexp: "^# .+\n"
+        replace: ""
+      changed_when: False
+      loop: "{{generate_service_units.stdout_lines}}"
+    - name: "Generate checksums of existing service unit files"
+      stat:
+        path: "{{systemd_unit_dir}}/{{item | basename}}"
+      register: existing_units
+      loop: "{{generate_service_units.stdout_lines}}"
+    - name: "Generate checksums of new service unit files"
+      stat:
+        path: "{{item}}"
+      register: new_units
+      loop: "{{generate_service_units.stdout_lines}}"
+    - name: "Copy changed service units to systemd unit directory"
+      become: yes
+      command: "cp {{item}} {{systemd_unit_dir}}"
+      when: not existing_units.results[index].stat.exists or existing_units.results[index].stat.checksum != new_units.results[index].stat.checksum
+      register: units_updated
+      notify: Start service
+      loop: "{{generate_service_units.stdout_lines}}"
+      loop_control:
+        index_var: index
     - name: "Reload systemd daemon"
+      become: yes
       systemd:
         daemon_reload: yes
-        scope: user
-    - name: "Enable and start systemd service"
-      systemd:
-        name: "{{service_name}}"
-        enabled: yes
-        state: started
-        scope: user
-- name: "Update {{pod_name}} service images"
-  tags:
-    - never
-    - update
-  command: "podman pull {{item.image}}"
-  notify: Restart service
-  loop: "{{pod_containers}}"
-- name: "Remove {{pod_name}} service"
+      when: units_updated.changed
+    - name: "Delete generated service unit files"
+      become: yes
+      file:
+        path: "{{item}}"
+        state: absent
+      changed_when: False
+      loop: "{{generate_service_units.stdout_lines}}"
+- name: "Remove '{{pod_name}}' pod"
   tags:
     - never
     - withdraw
@@ -107,11 +151,32 @@
         name: "{{service_name}}"
         enabled: no
         state: stopped
-    - name: "Delete systemd service file for {{pod_name}} pod"
-      file:
-        path: "{{service_files_dir}}/{{service_name}}"
-        state: absent
     - name: "Reload systemd daemon"
       systemd:
         daemon_reload: yes
-        scope: user
+    # Used for getting a list of unit filenames to delete
+    - name: "Generate systemd service units"
+      become: yes
+      become_user: "{{user}}"
+      command:
+        chdir: "/home/{{user}}"
+        cmd: "podman generate systemd --files --name {{pod_name}}"
+      changed_when: False
+      register: delete_service_units
+    - name: "Delete systemd service unit files"
+      become: yes
+      file:
+        path: "{{systemd_unit_dir}}/{{item | basename}}"
+        state: absent
+      loop: "{{delete_service_units.stdout_lines}}"
+    - name: "Delete generated systemd service units"
+      become: yes
+      file:
+        path: "{{item}}"
+        state: absent
+      changed_when: False
+      loop: "{{delete_service_units.stdout_lines}}"
+    - name: "Remove '{{pod_name}}' pod"
+      become: yes
+      become_user: "{{user}}"
+      command: "podman pod rm -f {{pod_name}}"

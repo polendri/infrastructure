@@ -1,6 +1,7 @@
 ---
-gid: 1
+group: users
 host_mounts: []
+pod_gid: 1
+pod_uid: 1
 service_ports: []
-systemd_unit_dir: "/home/{{ansible_user}}/.config/systemd/user"
-uid: 1
+user: "{{ansible_user}}"

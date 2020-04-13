@@ -1,15 +1,13 @@
 ---
-# Root directory for all container data on the host
-host_root_dir: "/home/{{ansible_user}}"
+# User running the services
+service_user: srv
+service_group: users
 
 # Directory for service configuration
-host_config_dir: "{{host_root_dir}}/config"
+host_config_dir: "/home/{{service_user}}/config"
 
 # Directory for service data
-host_data_dir: "{{host_root_dir}}/data"
-
-# Directory for service image build files
-host_image_dir: "{{host_root_dir}}/images"
+host_data_dir: "/home/{{service_user}}/data"
 
 # Email used for Let's Encrypt certificate expiry notifications
 letsencrypt_email: "paul@ijj.li"
