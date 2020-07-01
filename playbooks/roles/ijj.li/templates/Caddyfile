@@ -41,8 +41,8 @@ cv.ijj.li {
 il2.ijj.li {
     import common
     import static
-    root static/il2-intel
-    git github.com/polendri/il2-intel {
+    root static/il-tools
+    git github.com/polendri/il-tools {
         branch web
         hook /hooks/push "{{il2_webhook_secret}}"
     }

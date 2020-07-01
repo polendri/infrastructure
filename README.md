@@ -44,7 +44,7 @@ automatically redeploy on push. These webhooks are already configured and the se
 
 - Add hook for https://blog.ijj.li/hooks/push (https://github.com/pshendry/blog.ijj.li/settings/hooks/)
 - Add hook for https://cv.ijj.li/hooks/push (https://github.com/pshendry/cv.ijj.li/settings/hooks/)
-- Add hook for https://il2.ijj.li/hooks/push (https://github.com/pshendry/il2.ijj.li/settings/hooks/)
+- Add hook for https://il2.ijj.li/hooks/push (https://github.com/pshendry/il-tools/settings/hooks/)
 
 ## Execute Ansible playbooks
 
