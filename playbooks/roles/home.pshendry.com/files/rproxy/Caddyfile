@@ -1,0 +1,41 @@
+# {{ansible_managed | comment}}
+
+# Common configuration
+(common) {
+    tls paul@pshendry.com
+    log / /var/log/caddy/access.log "{host} {remote} - {user} [{when}] \"{method} {uri} {proto}\" {status} {size}"
+}
+
+# Nextcloud
+home.pshendry.com {
+    import common
+    limits {
+        body / 10GB
+    }
+    timeouts {
+        read 10m
+    }
+    rewrite {
+        r ^/\.well-known/(cal|card)dav$
+        to /remote.php/dav/
+    }
+    proxy / 127.0.0.1:80 {
+        transparent
+
+        # TODO enable/remove as required
+        header_downstream Strict-Transport-Security "max-age=15552000;"
+        # header_downstream Referrer-Policy "strict-origin-when-cross-origin"
+        # header_downstream X-XSS-Protection "1; mode=block"
+        # header_downstream X-Content-Type-Options "nosniff"
+        # header_downstream X-Frame-Options "SAMEORIGIN"
+    }
+}
+
+# Transmission
+# torrent.pshendry.com {
+#     import common
+#     basicauth / pshendry {$TRANSMISSION_PASSWORD}
+#     proxy / transmission:9091 {
+#         transparent
+#     }
+# }

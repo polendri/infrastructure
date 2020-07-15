@@ -1,0 +1,18 @@
+---
+# User running the services
+service_user: srv
+service_group: users
+
+hostname: "home.pshendry.com"
+
+# UUID of the server's internal HDD
+hdd1_uuid: "5cf855f6-fccd-4588-bd97-855bae2d5ef3"
+
+# IP/hostname of the NAS storage
+nas_host: "192.168.1.20"
+
+# Directory for service configuration
+host_config_dir: "/data/services/config"
+
+# Directory for service data
+host_data_dir: "/data/services/data"

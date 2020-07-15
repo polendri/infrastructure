@@ -2,8 +2,14 @@
 # Provisions and deploys the site.
 #
 # Tags:
-#   - provision:  Provisions hosts
-#   - deploy:     Updates and deploys services
+#   - provision: Provisions hosts
+#   - deploy:    Deploys services
+#   - update:    Applies updates to the services
+#   - upgrade:   Applies updates to the systems and to services
+#   - withdraw:  Un-deploys services
+- hosts: home.pshendry.com
+  roles:
+    - home.pshendry.com
 - hosts: ijj.li
   roles:
     - ijj.li

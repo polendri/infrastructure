@@ -2,10 +2,14 @@
 
 all:
   hosts:
+    home.pshendry.com:
     ijj.li:
   children:
     cloud:
       hosts:
         ijj.li:
+    home:
+      hosts:
+        home.pshendry.com:
   vars:
     ansible_user: psh

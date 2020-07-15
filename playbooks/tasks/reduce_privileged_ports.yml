@@ -1,0 +1,8 @@
+# I'd prefer to authorize privileged port usage at the time of launching the service (e.g. using systemd socket
+# units, or using authbind), but it's so much added complexity for seemingly very little benefit for a single-user
+# system.
+---
+- name: "Reduce privileged ports from 0-1023 down to 0-79"
+  sysctl:
+    name: net.ipv4.ip_unprivileged_port_start
+    value: "80"

@@ -4,13 +4,7 @@
     - provision
   become: yes
   block:
-    # I'd prefer to authorize privileged port usage at the time of launching the service (e.g. using systemd socket
-    # units, or using authbind), but it's so much added complexity for seemingly very little benefit for a single-user
-    # system.
-    - name: "Reduce privileged ports from 0-1023 down to 0-79"
-      sysctl:
-        name: net.ipv4.ip_unprivileged_port_start
-        value: "80"
+    - import_tasks: "tasks/reduce_privileged_ports.yml"
     - name: "Create '{{service_user}}' user for running services"
       user:
         name: "{{service_user}}"
@@ -69,7 +63,7 @@
         dest: "{{host_data_dir}}/goaccess/geoip/"
         owner: "{{service_user}}"
         group: "{{service_group}}"
-- name: "Start services"
+- name: "Deploy services"
   block:
     - name: "Create web pod"
       import_role:
@@ -112,7 +106,7 @@
           - "{{host_data_dir}}/caddy"
           - "{{host_config_dir}}/goaccess"
           - "{{host_data_dir}}/goaccess"
-        service_ports:
+        expose_ports:
           - 80/tcp
           - 443/tcp
           - 7890/tcp

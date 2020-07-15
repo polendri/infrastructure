@@ -3,5 +3,5 @@ group: users
 host_mounts: []
 pod_gid: 1
 pod_uid: 1
-service_ports: []
+expose_ports: []
 user: "{{ansible_user}}"

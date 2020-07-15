@@ -1,0 +1,157 @@
+---
+- name: "Configure system"
+  tags:
+    - provision
+  become: yes
+  block:
+    - import_tasks: "tasks/reduce_privileged_ports.yml"
+    - name: "Mount storage"
+      block:
+        - name: "Automount the internal HDD"
+          mount:
+            path: /data
+            src: "/dev/disk/by-uuid/{{hdd1_uuid}}"
+            fstype: ext4
+            state: mounted
+        - name: "Install NAS client"
+          apt:
+            name: nfs-common
+        - name: "Create NAS mountpoint"
+          file:
+            path: /nas
+            state: directory
+            group: root
+        - name: "Automount the NAS 'Documents' directory"
+          mount:
+            path: /nas/documents
+            src: "{{nas_host}}:/Documents"
+            fstype: nfs
+            state: mounted
+        - name: "Automount the NAS 'Media' directory"
+          mount:
+            path: /nas/media
+            src: "{{nas_host}}:/Media"
+            fstype: nfs
+            state: mounted
+    - name: "Create '{{service_user}}' user for running services"
+      user:
+        name: "{{service_user}}"
+        group: "{{service_group}}"
+    - name: "Allow Podman containers to access host"
+      import_role:
+        name: firewall
+      vars:
+        ports: "{{expose_ports}}"
+- name: "Create service config and data files/directories"
+  tags:
+    - deploy
+  become: yes
+  block:
+    - name: "web service"
+      block:
+        - name: "Copy rproxy Caddy configuration"
+          copy:
+            src: "rproxy/Caddyfile"
+            dest: "{{host_config_dir}}/rproxy/"
+            # TODO re-enable these ownerships when using rootless podman
+            # owner: "{{service_user}}"
+            # group: "{{service_group}}"
+            validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
+        - name: "Create rproxy certs directory"
+          file:
+            path: "{{host_data_dir}}/rproxy/certs"
+            state: directory
+            # owner: "{{service_user}}"
+            # group: "{{service_group}}"
+        - name: "Create rproxy logs directory"
+          file:
+            path: "{{host_data_dir}}/rproxy/logs"
+            state: directory
+            # owner: "{{service_user}}"
+            # group: "{{service_group}}"
+        - name: "Create Nextcloud DB directory"
+          file:
+            path: "{{host_data_dir}}/nextcloud-mariadb"
+            state: directory
+            # owner: "{{service_user}}"
+            # group: "{{service_group}}"
+        - name: "Create Nextcloud Redis directory"
+          file:
+            path: "{{host_data_dir}}/nextcloud-redis"
+            state: directory
+            # owner: "{{service_user}}"
+            # group: "{{service_group}}"
+        - name: "Create Nextcloud config directory"
+          file:
+            path: "{{host_config_dir}}/nextcloud"
+            state: directory
+            # owner: "{{service_user}}"
+            # group: "{{service_group}}"
+        - name: "Create Nextcloud data directory"
+          file:
+            path: "{{host_data_dir}}/nextcloud"
+            state: directory
+            # owner: "{{service_user}}"
+            # group: "{{service_group}}"
+- name: "Deploy services"
+  block:
+    - name: "Create web pod"
+      import_role:
+        name: podman
+      vars:
+        user: "{{service_user}}"
+        group: "{{service_group}}"
+        pod_name: web
+        pod_create_args: -p 80:8080 -p 443:8443
+        pod_uid: "1"
+        pod_gid: "1"
+        pod_containers:
+          - name: rproxy
+            image: quay.io/indeliblesoftware/caddy
+            run_args: "\
+              --read-only \
+              --cap-drop all \
+              --ulimit nofile=16384 \
+              -v {{host_config_dir}}/rproxy/Caddyfile:/etc/Caddyfile:ro \
+              -v {{host_data_dir}}/rproxy/certs:/etc/ssl/caddy \
+              -v {{host_data_dir}}/rproxy/logs:/var/log/caddy"
+            cmd_args: -agree
+          - name: nextcloud-mariadb
+            image: docker.io/mariadb
+            run_args: "\
+              --cap-drop all \
+              -v {{host_data_dir}}/nextcloud-mariadb:/var/lib/mysql"
+            cmd_args: "--transaction-isolation=READ-COMMITTED"
+          - name: nextcloud-redis
+            image: docker.io/redis:alpine
+            run_args: "\
+              --read-only \
+              --cap-drop all \
+              -v {{host_data_dir}}/nextcloud-redis:/data"
+          - name: nextcloud
+            image: docker.io/nextcloud:19
+            default_user: true
+            run_args: "\
+              -e APACHE_DISABLE_REWRITE_IP=1 \
+              -v {{host_config_dir}}/nextcloud:/var/www/html \
+              -v {{host_data_dir}}/nextcloud:/var/www/html/data \
+              -v /nas/documents:/nas/documents \
+              -v /nas/media:/nas/media"
+          - name: nextcloud-cron
+            image: docker.io/nextcloud:19
+            default_user: true
+            run_args: "\
+              -v {{host_config_dir}}/nextcloud:/var/www/html \
+              -v {{host_data_dir}}/nextcloud:/var/www/html/data \
+              -v /nas/documents:/nas/documents \
+              -v /nas/media:/nas/media"
+            cmd_args: "/cron.sh"
+        host_mounts:
+          - "{{host_config_dir}}/rproxy/Caddyfile"
+          - "{{host_data_dir}}/rproxy/certs"
+          - "{{host_data_dir}}/rproxy/logs"
+          - "{{host_data_dir}}/nextcloud-mariadb"
+          - "{{host_data_dir}}/nextcloud-redis"
+        expose_ports:
+          - 80/tcp
+          - 443/tcp

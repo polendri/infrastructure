@@ -11,7 +11,7 @@
     regexp: "^%sudo"
     line: "%sudo ALL=(ALL) NOPASSWD: ALL"
     validate: "visudo -cf %s"
-- name: "Create '{{user}}' user account exists"
+- name: "Create '{{user}}' user account"
   user:
     name: "{{user}}"
     group: users
