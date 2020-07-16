@@ -40,14 +40,16 @@
             path: "/var/lib/systemd/linger/{{user}}"
             state: touch
 - name: "Stop and disable existing systemd service"
+  tags:
+    - deploy
   become: yes
   systemd:
     name: "{{service_name}}"
     enabled: no
     state: stopped
   register: stop_systemd_service
-  # Return code of 5 is allowed (returned when service doesn't exist)
-  failed_when: stop_systemd_service.rc != 0 && stop_systemd_service != 5
+  # Allow for when the service doesn't exist (first run)
+  failed_when: false
 - name: "Create '{{pod_name}}' pod and containers"
   tags:
     - deploy
@@ -94,7 +96,7 @@
     - deploy
     - update
   block:
-    - name: "Create Ansible user systemd unit directory"
+    - name: "Create suser ystemd unit directory"
       file:
         path: "{{systemd_unit_dir}}"
         state: directory
@@ -107,14 +109,15 @@
         cmd: "podman generate systemd --files --name {{pod_name}}"
       changed_when: False
       register: generate_service_units
-    - name: "Set service units to run as user"
-      become: yes
-      replace:
-        path: "{{item}}"
-        regexp: "^\\[Service\\]$"
-        replace: "[Service]\nUser={{user}}\nGroup={{group}}"
-      loop: "{{generate_service_units.stdout_lines}}"
-      changed_when: False
+    # TODO re-enable when using rootless podman
+    # - name: "Set service units to run as user"
+    #   become: yes
+    #   replace:
+    #     path: "{{item}}"
+    #     regexp: "^\\[Service\\]$"
+    #     replace: "[Service]\nUser={{user}}\nGroup={{group}}"
+    #   loop: "{{generate_service_units.stdout_lines}}"
+    #   changed_when: False
     - name: "Remove comments from service units"
       become: yes
       replace:

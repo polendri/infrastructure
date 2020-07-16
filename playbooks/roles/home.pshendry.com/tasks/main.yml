@@ -47,6 +47,14 @@
     - deploy
   become: yes
   block:
+    - name: "unifi service"
+      block:
+        - name: "Create Unifi data directory"
+          file:
+            path: "{{host_data_dir}}/unifi"
+            state: directory
+            # owner: "{{service_user}}"
+            # group: "{{service_group}}"
     - name: "web service"
       block:
         - name: "Copy rproxy Caddy configuration"
@@ -95,6 +103,49 @@
             # group: "{{service_group}}"
 - name: "Deploy services"
   block:
+    - name: "Create unifi pod"
+      import_role:
+        name: podman
+      vars:
+        user: "{{service_user}}"
+        group: "{{service_group}}"
+        pod_name: unifi
+        pod_create_args: "\
+          -p 3478/udp \
+          -p 6789 \
+          -p 8080 \
+          -p 8443 \
+          -p 8880 \
+          -p 8843 \
+          -p 10001/udp"
+        pod_uid: "1"
+        pod_gid: "1"
+        pod_containers:
+          - name: unifi-controller
+            image: jacobalberty/unifi
+            default_user: true
+            run_args: "\
+              --cap-drop all \
+              --cap-add CHOWN \
+              --cap-add SETUID \
+              --cap-add SETGID \
+              -e BIND_PRIV=false \
+              -e RUNAS_UID0=false \
+              -e UNIFI_UID=1 \
+              -e UNIFI_GID=1 \
+              -e TZ=America/Toronto \
+              -v {{host_data_dir}}/unifi:/unifi \
+              --tmpfs /var/run/unifi"
+        host_mounts:
+          - "{{host_data_dir}}/unifi"
+        expose_ports:
+          - 3478/udp
+          - 6789/tcp
+          - 8080/tcp
+          - 8443/tcp
+          - 8880/tcp
+          - 8843/tcp
+          - 10001/udp
     - name: "Create web pod"
       import_role:
         name: podman
