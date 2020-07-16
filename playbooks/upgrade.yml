@@ -1,10 +1,13 @@
 ---
 # Runs system upgrades and reboots.
 - hosts: all
+  become: yes
   tasks:
     - name: "Apply system upgrades"
       apt:
-        update_cache: true
-        upgrade: safe
+        update_cache: yes
+        upgrade: full
+        autoclean: yes
+        autoremove: yes
     - name: "Reboot system"
       reboot:
