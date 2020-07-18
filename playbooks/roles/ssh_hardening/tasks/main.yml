@@ -6,7 +6,7 @@
   template:
     src: "sshd_config.j2"
     dest: "/etc/ssh/sshd_config"
-    mode: "0600"
+    mode: "600"
     owner: "root"
     group: "root"
     validate: "/usr/sbin/sshd -T -C user=root -C host=localhost -C addr=localhost -f %s"

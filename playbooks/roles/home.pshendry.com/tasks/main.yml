@@ -42,81 +42,73 @@
         name: firewall
       vars:
         ports: "{{expose_ports}}"
-- name: "Create service config and data files/directories"
+- name: "Create service config and data directories"
+  tags:
+    - deploy
+  become: yes
+  file:
+    path: "{{item}}"
+    state: directory
+    # TODO re-enable these ownerships when using rootless podman
+    # owner: "{{service_user}}"
+    # group: "{{service_group}}"
+  loop:
+    - "{{host_config_dir}}/nextcloud"
+    - "{{host_data_dir}}/gitolite/git"
+    - "{{host_data_dir}}/gitolite/keys"
+    - "{{host_data_dir}}/rproxy/certs"
+    - "{{host_data_dir}}/rproxy/logs"
+    - "{{host_data_dir}}/unifi"
+    - "{{host_data_dir}}/nextcloud"
+    - "{{host_data_dir}}/nextcloud-mariadb"
+    - "{{host_data_dir}}/nextcloud-redis"
+- name: "Copy service configuration data"
   tags:
     - deploy
   become: yes
   block:
-    - name: "gitolite service"
-      block:
-        - name: "Create gitolite keys directory"
-          file:
-            path: "{{host_data_dir}}/gitolite/keys"
-            state: directory
-            # TODO re-enable these ownerships when using rootless podman
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
-        - name: "Create gitolite data directory"
-          file:
-            path: "{{host_data_dir}}/gitolite/git"
-            state: directory
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
-    - name: "unifi service"
-      block:
-        - name: "Create Unifi data directory"
-          file:
-            path: "{{host_data_dir}}/unifi"
-            state: directory
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
-    - name: "web service"
-      block:
-        - name: "Copy rproxy Caddy configuration"
-          copy:
-            src: "rproxy/Caddyfile"
-            dest: "{{host_config_dir}}/rproxy/"
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
-            validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
-        - name: "Create rproxy certs directory"
-          file:
-            path: "{{host_data_dir}}/rproxy/certs"
-            state: directory
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
-        - name: "Create rproxy logs directory"
-          file:
-            path: "{{host_data_dir}}/rproxy/logs"
-            state: directory
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
-        - name: "Create Nextcloud DB directory"
-          file:
-            path: "{{host_data_dir}}/nextcloud-mariadb"
-            state: directory
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
-        - name: "Create Nextcloud Redis directory"
-          file:
-            path: "{{host_data_dir}}/nextcloud-redis"
-            state: directory
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
-        - name: "Create Nextcloud config directory"
-          file:
-            path: "{{host_config_dir}}/nextcloud"
-            state: directory
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
-        - name: "Create Nextcloud data directory"
-          file:
-            path: "{{host_data_dir}}/nextcloud"
-            state: directory
-            # owner: "{{service_user}}"
-            # group: "{{service_group}}"
+    - name: "Copy dyndns ddclient configuration"
+      template:
+        src: "ddclient/ddclient.conf"
+        dest: "{{host_config_dir}}/ddclient/"
+        # owner: "{{service_user}}"
+        # group: "{{service_group}}"
+        mode: "600"
+    - name: "Copy rproxy Caddy configuration"
+      copy:
+        src: "rproxy/Caddyfile"
+        dest: "{{host_config_dir}}/rproxy/"
+        # owner: "{{service_user}}"
+        # group: "{{service_group}}"
+        mode: "600"
+        validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
 - name: "Deploy services"
   block:
+    - name: "Create dyndns pod"
+      import_role:
+        name: podman
+      vars:
+        user: "{{service_user}}"
+        group: "{{service_group}}"
+        pod_name: dyndns
+        pod_create_args: ""
+        pod_uid: "1"
+        pod_gid: "1"
+        pod_containers:
+          - name: ddclient
+            image: docker.io/linuxserver/ddclient
+            default_user: true
+            run_args: "\
+              --cap-drop all \
+              --cap-add CHOWN \
+              --cap-add SETUID \
+              --cap-add SETGID \
+              -e PUID=1 \
+              -e PGID=1 \
+              -e TZ=America/Toronto \
+              -v {{host_config_dir}}/ddclient:/config:ro"
+        host_mounts:
+          - "{{host_config_dir}}/ddclient"
     - name: "Create Gitolite pod"
       import_role:
         name: podman

@@ -16,7 +16,7 @@
         regexp: "^{{user}}:.*"
         line: "{{user}}:100000:65536"
         create: yes
-        mode: "0644"
+        mode: "644"
     - name: "Add user to subgid file"
       become: yes
       lineinfile:
@@ -24,7 +24,7 @@
         regexp: "^{{user}}:.*"
         line: "{{user}}:100000:65536"
         create: yes
-        mode: "0644"
+        mode: "644"
     - name: "Allow user to run systemd services at boot"
       become: yes
       # This command should work but it fails with "Could not enable linger: No such file or directory".

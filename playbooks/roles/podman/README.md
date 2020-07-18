@@ -14,7 +14,7 @@ Runs and manages a Podman pod.
 | Variable                      | Description                                                          | Default            |
 | ----------------------------- | -------------------------------------------------------------------- | ------------------ |
 | `pod_name`                    | Name of the pod                                                      |                    |
-| `pod_create_args`             | `podman pod create` args                                             |                    |
+| `pod_create_args`             | `podman pod create` args                                             | `''`               |
 | `pod_containers`              | Array of container definitions                                       |                    |
 | `pod_containers.name`         | Name of the container                                                |                    |
 | `pod_containers.image`        | Container image name                                                 |                    |
