@@ -96,7 +96,7 @@
     - deploy
     - update
   block:
-    - name: "Create suser ystemd unit directory"
+    - name: "Create systemd unit directory"
       file:
         path: "{{systemd_unit_dir}}"
         state: directory
@@ -118,29 +118,9 @@
     #     replace: "[Service]\nUser={{user}}\nGroup={{group}}"
     #   loop: "{{generate_service_units.stdout_lines}}"
     #   changed_when: False
-    - name: "Remove comments from service units"
-      become: yes
-      replace:
-        path: "{{item}}"
-        regexp: "^# .+\n"
-        replace: ""
-      changed_when: False
-      loop: "{{generate_service_units.stdout_lines}}"
-    - name: "Generate checksums of existing service unit files"
-      stat:
-        path: "{{systemd_unit_dir}}/{{item | basename}}"
-      register: existing_units
-      loop: "{{generate_service_units.stdout_lines}}"
-    - name: "Generate checksums of new service unit files"
-      stat:
-        path: "{{item}}"
-      register: new_units
-      loop: "{{generate_service_units.stdout_lines}}"
-    - name: "Copy changed service units to systemd unit directory"
+    - name: "Copy service units to systemd unit directory"
       become: yes
       command: "cp {{item}} {{systemd_unit_dir}}"
-      when: not existing_units.results[index].stat.exists or existing_units.results[index].stat.checksum != new_units.results[index].stat.checksum
-      register: units_updated
       notify: Start service
       loop: "{{generate_service_units.stdout_lines}}"
       loop_control:
@@ -149,7 +129,6 @@
       become: yes
       systemd:
         daemon_reload: yes
-      when: units_updated.changed
     - name: "Delete generated service unit files"
       become: yes
       file:

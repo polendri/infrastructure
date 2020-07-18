@@ -56,12 +56,16 @@
     - "{{host_config_dir}}/nextcloud"
     - "{{host_data_dir}}/gitolite/git"
     - "{{host_data_dir}}/gitolite/keys"
-    - "{{host_data_dir}}/rproxy/certs"
-    - "{{host_data_dir}}/rproxy/logs"
-    - "{{host_data_dir}}/unifi"
     - "{{host_data_dir}}/nextcloud"
     - "{{host_data_dir}}/nextcloud-mariadb"
     - "{{host_data_dir}}/nextcloud-redis"
+    - "{{host_data_dir}}/plex"
+    - "{{host_data_dir}}/rproxy/certs"
+    - "{{host_data_dir}}/rproxy/certs"
+    - "{{host_data_dir}}/rproxy/logs"
+    - "{{host_data_dir}}/unifi"
+    # TODO use $XDG_RUNTIME_DIR instead of /run when using rootless podman
+    - "/run/plex"
 - name: "Copy service configuration data"
   tags:
     - deploy
@@ -109,7 +113,7 @@
               -v {{host_config_dir}}/ddclient:/config:ro"
         host_mounts:
           - "{{host_config_dir}}/ddclient"
-    - name: "Create Gitolite pod"
+    - name: "Create gitolite pod"
       import_role:
         name: podman
       vars:
@@ -131,6 +135,50 @@
           - "{{host_data_dir}}/gitolite/git"
         expose_ports:
           - 23/tcp
+    - name: "Create mediaserver pod"
+      import_role:
+        name: podman
+      vars:
+        user: "{{service_user}}"
+        group: "{{service_group}}"
+        pod_name: mediaserver
+        pod_create_args: "\
+          -p 3005/tcp \
+          -p 8324/tcp \
+          -p 32400/tcp \
+          -p 32469/tcp \
+          -p 1900/udp \
+          -p 32410/udp \
+          -p 32412/udp \
+          -p 32413/udp \
+          -p 32414/udp"
+        pod_uid: "1"
+        pod_gid: "1"
+        pod_containers:
+          - name: plex
+            image: docker.io/plexinc/pms-docker
+            default_user: true
+            run_args: "\
+              -e ADVERTISE_IP=http://home.ijj.li:32400/ \
+              -e PLEX_UID=1 \
+              -e PLEX_GID=1 \
+              -e TZ=America/Toronto \
+              -v {{host_data_dir}}/plex:/config \
+              -v {{host_media_dir}}:/data \
+              -v /run/plex:/transcode"
+        host_mounts:
+          - "{{host_data_dir}}/plex"
+          - "/run/plex"
+        expose_ports:
+          - 3005/tcp
+          - 8324/tcp
+          - 32400/tcp
+          - 32469/tcp
+          - 1900/udp
+          - 32410/udp
+          - 32412/udp
+          - 32413/udp
+          - 32414/udp
     - name: "Create unifi pod"
       import_role:
         name: podman
