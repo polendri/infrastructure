@@ -1,3 +1,3 @@
 ---
 service_name: "pod-{{pod_name}}.service"
-systemd_unit_dir: "/etc/systemd/system"
+systemd_unit_dir: "/lib/systemd/system"

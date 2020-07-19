@@ -1,0 +1,15 @@
+# {{ansible_managed | comment}}
+
+[Unit]
+Description=Wireguard wg1 interface
+After=network-online.target nss-lookup.target
+Wants=network-online.target nss-lookup.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/wg1-up.sh
+ExecStop=/usr/bin/wg1-down.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -42,6 +42,83 @@
         name: firewall
       vars:
         ports: "{{expose_ports}}"
+    - name: "Configure Wireguard"
+      block:
+        - name: "Enable IPv4 forwarding"
+          sysctl:
+            name: net.ipv4.ip_forward
+            value: "1"
+        - name: "Open firewall port for Wireguard"
+          import_role:
+            name: firewall
+          vars:
+            ports:
+              - "51820/udp"
+        - name: "Install Wireguard"
+          package:
+            name:
+              - openresolv
+              - wireguard
+            state: present
+        - name: "Remove existing interfaces"
+          block:
+            - name: "Remove wg0 interface"
+              systemd:
+                name: "wg-quick@wg0"
+                enabled: no
+                state: stopped
+              failed_when: false
+            - name: "Remove wg1 interface"
+              systemd:
+                name: "net-wg1"
+                enabled: no
+                state: stopped
+              failed_when: false
+        - name: "Configure interfaces"
+          block:
+            - name: "Copy wg0 configuration file"
+              template:
+                src: "wireguard/wg0.conf"
+                dest: "/etc/wireguard/"
+                mode: "700"
+            - name: "Copy wg1-up.sh script"
+              template:
+                src: "wireguard/wg1-up.sh"
+                dest: "/usr/bin/"
+                mode: "755"
+            - name: "Copy wg1-down.sh script"
+              copy:
+                src: "wireguard/wg1-down.sh"
+                dest: "/usr/bin/"
+                mode: "755"
+            - name: "Copy wg1 systemd unit"
+              template:
+                src: "wireguard/net-wg1.service"
+                dest: "{{systemd_unit_dir}}"
+                mode: "644"
+        - name: "Start and enable systemd units"
+          block:
+            - name: "Reload systemd daemon"
+              systemd:
+                daemon_reload: yes
+            - name: "Start and enable wg0 interface"
+              systemd:
+                name: "wg-quick@wg0"
+                enabled: yes
+                state: started
+            - name: "Start and enable wg1 interface"
+              systemd:
+                name: "net-wg1"
+                enabled: yes
+                state: started
+        # Makes it such that inbound packets aren't dropped if they come from an interface which isn't the normal
+        # outbound route.
+        - name: "Set loose IP filtering"
+          sysctl:
+            name: net.ipv4.conf.all.rp_filter
+            value: "2"
+        # TODO persist wireguard interfaces on reboot
+
 - name: "Create service config and data directories"
   tags:
     - deploy
@@ -71,13 +148,13 @@
     - deploy
   become: yes
   block:
-    - name: "Copy dyndns ddclient configuration"
-      template:
-        src: "ddclient/ddclient.conf"
-        dest: "{{host_config_dir}}/ddclient/"
-        # owner: "{{service_user}}"
-        # group: "{{service_group}}"
-        mode: "600"
+    # - name: "Copy dyndns ddclient configuration"
+    #   template:
+    #     src: "ddclient/ddclient.conf"
+    #     dest: "{{host_config_dir}}/ddclient/"
+    #     # owner: "{{service_user}}"
+    #     # group: "{{service_group}}"
+    #     mode: "600"
     - name: "Copy rproxy Caddy configuration"
       copy:
         src: "rproxy/Caddyfile"
@@ -88,31 +165,31 @@
         validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
 - name: "Deploy services"
   block:
-    - name: "Create dyndns pod"
-      import_role:
-        name: podman
-      vars:
-        user: "{{service_user}}"
-        group: "{{service_group}}"
-        pod_name: dyndns
-        pod_create_args: ""
-        pod_uid: "1"
-        pod_gid: "1"
-        pod_containers:
-          - name: ddclient
-            image: docker.io/linuxserver/ddclient
-            default_user: true
-            run_args: "\
-              --cap-drop all \
-              --cap-add CHOWN \
-              --cap-add SETUID \
-              --cap-add SETGID \
-              -e PUID=1 \
-              -e PGID=1 \
-              -e TZ=America/Toronto \
-              -v {{host_config_dir}}/ddclient:/config:ro"
-        host_mounts:
-          - "{{host_config_dir}}/ddclient"
+    # - name: "Create dyndns pod"
+    #   import_role:
+    #     name: podman
+    #   vars:
+    #     user: "{{service_user}}"
+    #     group: "{{service_group}}"
+    #     pod_name: dyndns
+    #     pod_create_args: ""
+    #     pod_uid: "1"
+    #     pod_gid: "1"
+    #     pod_containers:
+    #       - name: ddclient
+    #         image: docker.io/linuxserver/ddclient
+    #         default_user: true
+    #         run_args: "\
+    #           --cap-drop all \
+    #           --cap-add CHOWN \
+    #           --cap-add SETUID \
+    #           --cap-add SETGID \
+    #           -e PUID=1 \
+    #           -e PGID=1 \
+    #           -e TZ=America/Toronto \
+    #           -v {{host_config_dir}}/ddclient:/config:ro"
+    #     host_mounts:
+    #       - "{{host_config_dir}}/ddclient"
     - name: "Create gitolite pod"
       import_role:
         name: podman

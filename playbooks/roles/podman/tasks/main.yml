@@ -89,8 +89,15 @@
   # TODO re-enable when using rootless podman
   #become_user: "{{user}}"
   command: "podman pull {{item.image}}"
-  notify: Restart service
   loop: "{{pod_containers}}"
+- name: "Restart service"
+  tags:
+    - never
+    - update
+  become: yes
+  systemd:
+    name: "{{service_name}}"
+    state: restarted
 - name: "Configure systemd services for '{{pod_name}}'"
   tags:
     - deploy
@@ -105,7 +112,7 @@
       # TODO re-enable when using rootless podman
       #become_user: "{{user}}"
       command:
-        chdir: "/home/{{user}}"
+        chdir: "{{systemd_unit_dir}}"
         cmd: "podman generate systemd --files --name {{pod_name}}"
       changed_when: False
       register: generate_service_units
@@ -121,7 +128,6 @@
     - name: "Copy service units to systemd unit directory"
       become: yes
       command: "cp {{item}} {{systemd_unit_dir}}"
-      notify: Start service
       loop: "{{generate_service_units.stdout_lines}}"
       loop_control:
         index_var: index
@@ -129,13 +135,12 @@
       become: yes
       systemd:
         daemon_reload: yes
-    - name: "Delete generated service unit files"
+    - name: "Enable and start service"
       become: yes
-      file:
-        path: "{{item}}"
-        state: absent
-      changed_when: False
-      loop: "{{generate_service_units.stdout_lines}}"
+      systemd:
+        name: "{{service_name}}"
+        enabled: yes
+        state: started
 - name: "Configure firewall for '{{pod_name}}' pod"
   tags:
     - deploy
@@ -155,6 +160,7 @@
         enabled: no
         state: stopped
     - name: "Reload systemd daemon"
+      become: yes
       systemd:
         daemon_reload: yes
     # Used for getting a list of unit filenames to delete
