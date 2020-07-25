@@ -158,6 +158,40 @@
         validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
 - name: "Deploy services"
   block:
+    - name: "Deploy Transmission"
+      tags:
+        - deploy
+      become: yes
+      block:
+        - name: "Add Transmision apt repository"
+          apt_repository:
+            repo: "ppa:transmissionbt/ppa"
+        - name: "Install Transmission"
+          package:
+            name:
+              - transmission-cli
+              - transmission-daemon
+            state: present
+        - name: "Open firewall port for Transmission web UI"
+          import_role:
+            name: firewall
+          vars:
+            ports:
+              - "9091/tcp"
+        - name: "Stop Transmission daemon if it exists"
+          systemd:
+            name: "transmission-daemon"
+            state: stopped
+          failed_when: false
+        - name: "Copy Transmission configuration file"
+          template:
+            src: "transmission/settings.json"
+            dest: "/var/lib/transmission-daemon/.config/transmission-daemon/"
+        - name: "Enable and start Transmission daemon"
+          systemd:
+            name: "transmission-daemon"
+            enabled: yes
+            state: restarted
     - name: "Create gitolite pod"
       import_role:
         name: podman

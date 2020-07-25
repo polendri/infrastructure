@@ -125,12 +125,6 @@
     #     replace: "[Service]\nUser={{user}}\nGroup={{group}}"
     #   loop: "{{generate_service_units.stdout_lines}}"
     #   changed_when: False
-    - name: "Copy service units to systemd unit directory"
-      become: yes
-      command: "cp {{item}} {{systemd_unit_dir}}"
-      loop: "{{generate_service_units.stdout_lines}}"
-      loop_control:
-        index_var: index
     - name: "Reload systemd daemon"
       become: yes
       systemd:
