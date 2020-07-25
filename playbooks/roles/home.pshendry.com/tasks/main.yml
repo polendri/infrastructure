@@ -130,6 +130,7 @@
     # owner: "{{service_user}}"
     # group: "{{service_group}}"
   loop:
+    - "/data/duplicati"
     - "{{host_config_dir}}/nextcloud"
     - "{{host_data_dir}}/gitolite/git"
     - "{{host_data_dir}}/gitolite/keys"
@@ -146,6 +147,7 @@
 - name: "Copy service configuration data"
   tags:
     - deploy
+    - update
   become: yes
   block:
     - name: "Copy rproxy Caddy configuration"
@@ -158,41 +160,31 @@
         validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
 - name: "Deploy services"
   block:
-    - name: "Deploy Transmission"
-      tags:
-        - deploy
-      become: yes
-      block:
-        - name: "Add Transmision apt repository"
-          apt_repository:
-            repo: "ppa:transmissionbt/ppa"
-        - name: "Install Transmission"
-          package:
-            name:
-              - transmission-cli
-              - transmission-daemon
-            state: present
-        - name: "Open firewall port for Transmission web UI"
-          import_role:
-            name: firewall
-          vars:
-            ports:
-              - "9091/tcp"
-        - name: "Stop Transmission daemon if it exists"
-          systemd:
-            name: "transmission-daemon"
-            state: stopped
-          failed_when: false
-        - name: "Copy Transmission configuration file"
-          template:
-            src: "transmission/settings.json"
-            dest: "/var/lib/transmission-daemon/.config/transmission-daemon/"
-        - name: "Enable and start Transmission daemon"
-          systemd:
-            name: "transmission-daemon"
-            enabled: yes
-            state: restarted
-    - name: "Create gitolite pod"
+    - name: "Deploy backup pod"
+      import_role:
+        name: podman
+      vars:
+        user: "{{service_user}}"
+        group: "{{service_group}}"
+        pod_name: backup
+        pod_create_args: "-p 8200"
+        pod_uid: "1"
+        pod_gid: "1"
+        pod_containers:
+          - name: duplicati
+            image: docker.io/duplicati/duplicati
+            default_user: true
+            run_args: "\
+              -v /backup:/backup \
+              -v /data/duplicati:/data \
+              -v /nas/documents:/nas/documents:ro \
+              -v /nas/media:/nas/media:ro \
+              -v {{host_data_dir}}:/services:ro"
+        host_mounts:
+          - "/data/duplicati"
+        expose_ports:
+          - 8200/tcp
+    - name: "Deploy gitolite pod"
       import_role:
         name: podman
       vars:
@@ -214,7 +206,7 @@
           - "{{host_data_dir}}/gitolite/git"
         expose_ports:
           - 23/tcp
-    - name: "Create mediaserver pod"
+    - name: "Deploy mediaserver pod"
       import_role:
         name: podman
       vars:
@@ -258,7 +250,41 @@
           - 32412/udp
           - 32413/udp
           - 32414/udp
-    - name: "Create unifi pod"
+    - name: "Deploy Transmission"
+      tags:
+        - deploy
+      become: yes
+      block:
+        - name: "Add Transmision apt repository"
+          apt_repository:
+            repo: "ppa:transmissionbt/ppa"
+        - name: "Install Transmission"
+          package:
+            name:
+              - transmission-cli
+              - transmission-daemon
+            state: present
+        - name: "Open firewall port for Transmission web UI"
+          import_role:
+            name: firewall
+          vars:
+            ports:
+              - "9091/tcp"
+        - name: "Stop Transmission daemon if it exists"
+          systemd:
+            name: "transmission-daemon"
+            state: stopped
+          failed_when: false
+        - name: "Copy Transmission configuration file"
+          template:
+            src: "transmission/settings.json"
+            dest: "/var/lib/transmission-daemon/.config/transmission-daemon/"
+        - name: "Enable and start Transmission daemon"
+          systemd:
+            name: "transmission-daemon"
+            enabled: yes
+            state: restarted
+    - name: "Deploy unifi pod"
       import_role:
         name: podman
       vars:
@@ -301,7 +327,7 @@
           - 8880/tcp
           - 8843/tcp
           - 10001/udp
-    - name: "Create web pod"
+    - name: "Deploy web pod"
       import_role:
         name: podman
       vars:
