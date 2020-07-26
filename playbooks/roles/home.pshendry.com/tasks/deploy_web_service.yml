@@ -1,0 +1,66 @@
+# Deploys a reverse proxy and all the web services that go through it:
+#
+#   - Nextcloud
+#
+# Read-only/capability/user precautions are relaxed out of convenience, but should probably be tightened.
+---
+- name: "Deploy web pod"
+  import_role:
+    name: podman
+  vars:
+    user: "{{service_user}}"
+    group: "{{service_group}}"
+    pod_name: web
+    pod_create_args: -p 80:8080 -p 443:8443
+    pod_uid: "1"
+    pod_gid: "1"
+    pod_containers:
+      - name: rproxy
+        image: quay.io/indeliblesoftware/caddy
+        run_args: "\
+          --read-only \
+          --cap-drop all \
+          --ulimit nofile=16384 \
+          -v {{host_config_dir}}/rproxy/Caddyfile:/etc/Caddyfile:ro \
+          -v {{host_data_dir}}/rproxy/certs:/etc/ssl/caddy \
+          -v {{host_data_dir}}/rproxy/logs:/var/log/caddy"
+        cmd_args: -agree
+      - name: nextcloud-mariadb
+        image: docker.io/mariadb
+        run_args: "\
+          --cap-drop all \
+          -v {{host_data_dir}}/nextcloud-mariadb:/var/lib/mysql"
+        cmd_args: "--transaction-isolation=READ-COMMITTED"
+      - name: nextcloud-redis
+        image: docker.io/redis:alpine
+        run_args: "\
+          --read-only \
+          --cap-drop all \
+          -v {{host_data_dir}}/nextcloud-redis:/data"
+      - name: nextcloud
+        image: docker.io/nextcloud:19
+        default_user: true
+        run_args: "\
+          -e APACHE_DISABLE_REWRITE_IP=1 \
+          -v {{host_config_dir}}/nextcloud:/var/www/html \
+          -v {{host_data_dir}}/nextcloud:/var/www/html/data \
+          -v /nas/documents:/nas/documents \
+          -v /nas/media:/nas/media"
+      - name: nextcloud-cron
+        image: docker.io/nextcloud:19
+        default_user: true
+        run_args: "\
+          -v {{host_config_dir}}/nextcloud:/var/www/html \
+          -v {{host_data_dir}}/nextcloud:/var/www/html/data \
+          -v /nas/documents:/nas/documents \
+          -v /nas/media:/nas/media"
+        cmd_args: "/cron.sh"
+    host_mounts:
+      - "{{host_config_dir}}/rproxy/Caddyfile"
+      - "{{host_data_dir}}/rproxy/certs"
+      - "{{host_data_dir}}/rproxy/logs"
+      - "{{host_data_dir}}/nextcloud-mariadb"
+      - "{{host_data_dir}}/nextcloud-redis"
+    expose_ports:
+      - 80/tcp
+      - 443/tcp

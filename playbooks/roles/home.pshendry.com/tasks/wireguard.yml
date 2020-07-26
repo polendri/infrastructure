@@ -1,0 +1,77 @@
+# Configures and enables two Wireguard interfaces:
+#   - wg0: VPN "server" for tunneling into the home LAN
+#   - wg1: VPN "client" for anonymous outbound connections from the server
+---
+- name: "Enable IPv4 forwarding"
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+- name: "Open firewall port for Wireguard"
+  import_role:
+    name: firewall
+  vars:
+    ports:
+      - "51820/udp"
+- name: "Install Wireguard"
+  package:
+    name:
+      - openresolv
+      - wireguard
+    state: present
+- name: "Remove existing interfaces"
+  block:
+    - name: "Remove wg0 interface"
+      systemd:
+        name: "wg-quick@wg0"
+        enabled: no
+        state: stopped
+      failed_when: false
+    - name: "Remove wg1 interface"
+      systemd:
+        name: "net-wg1"
+        enabled: no
+        state: stopped
+      failed_when: false
+- name: "Configure interfaces"
+  block:
+    - name: "Copy wg0 configuration file"
+      template:
+        src: "wireguard/wg0.conf"
+        dest: "/etc/wireguard/"
+        mode: "700"
+    - name: "Copy wg1-up.sh script"
+      template:
+        src: "wireguard/wg1-up.sh"
+        dest: "/usr/bin/"
+        mode: "755"
+    - name: "Copy wg1-down.sh script"
+      copy:
+        src: "wireguard/wg1-down.sh"
+        dest: "/usr/bin/"
+        mode: "755"
+    - name: "Copy wg1 systemd unit"
+      template:
+        src: "wireguard/net-wg1.service"
+        dest: "{{systemd_unit_dir}}"
+        mode: "644"
+- name: "Start and enable systemd units"
+  block:
+    - name: "Reload systemd daemon"
+      systemd:
+        daemon_reload: yes
+    - name: "Start and enable wg0 interface"
+      systemd:
+        name: "wg-quick@wg0"
+        enabled: yes
+        state: started
+    - name: "Start and enable wg1 interface"
+      systemd:
+        name: "net-wg1"
+        enabled: yes
+        state: started
+# Makes it such that inbound packets aren't dropped if they come from an interface which isn't the normal
+# outbound route.
+- name: "Set loose IP filtering"
+  sysctl:
+    name: net.ipv4.conf.all.rp_filter
+    value: "2"

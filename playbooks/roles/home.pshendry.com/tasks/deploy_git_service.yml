@@ -1,0 +1,26 @@
+# Deploys Gitolite as a Podman pod
+#
+# Read-only/capability/user precautions are relaxed out of convenience, but should probably be tightened.
+---
+- name: "Deploy git pod"
+  import_role:
+    name: podman
+  vars:
+    user: "{{service_user}}"
+    group: "{{service_group}}"
+    pod_name: git
+    pod_create_args: "-p 23:22"
+    pod_uid: "1"
+    pod_gid: "1"
+    pod_containers:
+      - name: gitolite
+        image: docker.io/jgiannuzzi/gitolite
+        default_user: true
+        run_args: "\
+          -v {{host_data_dir}}/gitolite/keys:/etc/ssh/keys \
+          -v {{host_data_dir}}/gitolite/git:/var/lib/git"
+    host_mounts:
+      - "{{host_data_dir}}/gitolite/keys"
+      - "{{host_data_dir}}/gitolite/git"
+    expose_ports:
+      - 23/tcp

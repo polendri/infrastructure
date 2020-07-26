@@ -1,0 +1,29 @@
+# Deploys Duplicati as a Podman pod.
+#
+# Read-only/capability/user precautions are relaxed out of convenience since this is not a service
+# that accepts external connections.
+---
+- name: "Deploy backup pod"
+  import_role:
+    name: podman
+  vars:
+    user: "{{service_user}}"
+    group: "{{service_group}}"
+    pod_name: backup
+    pod_create_args: "-p 8200"
+    pod_uid: "1"
+    pod_gid: "1"
+    pod_containers:
+      - name: duplicati
+        image: docker.io/duplicati/duplicati
+        default_user: true
+        run_args: "\
+          -v /media:/media \
+          -v /data/duplicati:/data \
+          -v /nas/documents:/nas/documents:ro \
+          -v /nas/media:/nas/media:ro \
+          -v {{host_data_dir}}:/services:ro"
+    host_mounts:
+      - "/data/duplicati"
+    expose_ports:
+      - 8200/tcp

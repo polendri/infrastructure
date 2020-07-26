@@ -30,12 +30,3 @@ home.pshendry.com {
         # header_downstream X-Frame-Options "SAMEORIGIN"
     }
 }
-
-# Transmission
-# torrent.pshendry.com {
-#     import common
-#     basicauth / pshendry {$TRANSMISSION_PASSWORD}
-#     proxy / transmission:9091 {
-#         transparent
-#     }
-# }
