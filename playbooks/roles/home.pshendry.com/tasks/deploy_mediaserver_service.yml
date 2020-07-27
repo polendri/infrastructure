@@ -29,7 +29,7 @@
           -e ADVERTISE_IP=http://home.ijj.li:32400/ \
           -e PLEX_UID=1 \
           -e PLEX_GID=1 \
-          -e TZ=America/Toronto \
+          -e TZ={{timezone}} \
           -v {{host_data_dir}}/plex:/config \
           -v {{host_media_dir}}:/data \
           -v /run/plex:/transcode"

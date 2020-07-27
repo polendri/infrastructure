@@ -30,7 +30,7 @@
           -e RUNAS_UID0=false \
           -e UNIFI_UID=1 \
           -e UNIFI_GID=1 \
-          -e TZ=America/Toronto \
+          -e TZ={{timezone}} \
           -v {{host_data_dir}}/unifi:/unifi \
           --tmpfs /var/run/unifi"
     host_mounts:

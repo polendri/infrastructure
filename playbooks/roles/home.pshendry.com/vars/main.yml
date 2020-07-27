@@ -4,6 +4,7 @@ service_user: srv
 service_group: users
 
 hostname: "home.pshendry.com"
+timezone: "America/Toronto"
 
 # UUID of the server's internal HDD
 hdd1_uuid: "5cf855f6-fccd-4588-bd97-855bae2d5ef3"
