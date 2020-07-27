@@ -1,0 +1,34 @@
+# Deploys Syncthing as a Podman pod
+---
+- name: "Deploy sync pod"
+  import_role:
+    name: podman
+  vars:
+    user: "{{service_user}}"
+    group: "{{service_group}}"
+    pod_name: sync
+    pod_create_args: "
+      -p 8384/tcp \
+      -p 22000/tcp"
+    pod_uid: "1"
+    pod_gid: "1"
+    pod_containers:
+      - name: syncthing
+        image: docker.io/syncthing/syncthing
+        default_user: true
+        run_args: "\
+          --read-only \
+          --cap-drop all \
+          --cap-add CHOWN \
+          --cap-add SETUID \
+          --cap-add SETGID \
+          -e PUID=1 \
+          -e PGID=1 \
+          -v {{host_config_dir}}/syncthing:/var/syncthing/config \
+          -v {{host_documents_dir}}:/var/syncthing/documents \
+          -v {{host_media_dir}}:/var/syncthing/media"
+    host_mounts:
+      - "{{host_config_dir}}/syncthing"
+    expose_ports:
+      - 8384/tcp
+      - 22000/tcp

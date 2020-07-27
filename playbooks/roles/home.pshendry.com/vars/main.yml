@@ -17,6 +17,7 @@ host_config_dir: "/data/services/config"
 # Directory for service data
 host_data_dir: "/data/services/data"
 
+host_documents_dir: "/nas/documents"
 host_media_dir: "/nas/media"
 
 namecheap_dyndns_password_ijj_li: !vault |

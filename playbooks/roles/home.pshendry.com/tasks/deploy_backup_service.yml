@@ -20,8 +20,8 @@
         run_args: "\
           -v /media:/media \
           -v /data/duplicati:/data \
-          -v /nas/documents:/nas/documents:ro \
-          -v /nas/media:/nas/media:ro \
+          -v {{host_documents_dir}}:/nas/documents:ro \
+          -v {{host_media_dir}}:/nas/media:ro \
           -v {{host_data_dir}}:/services:ro"
     host_mounts:
       - "/data/duplicati"

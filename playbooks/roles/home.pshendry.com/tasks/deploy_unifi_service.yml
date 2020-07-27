@@ -1,6 +1,4 @@
 # Deploys the Unifi Controller as a Podman pod
-#
-# Read-only/capability/user precautions are relaxed out of convenience, but should probably be tightened.
 ---
 - name: "Deploy unifi pod"
   import_role:

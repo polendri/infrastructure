@@ -4,7 +4,7 @@
     - provision
   become: yes
   block:
-    - import_tasks: "tasks/reduce_privileged_ports.yml"
+    - import_tasks: "reduce_privileged_ports.yml"
     - name: "Mount storage"
       block:
         - name: "Automount the internal HDD"
@@ -23,13 +23,13 @@
             group: root
         - name: "Automount the NAS 'Documents' directory"
           mount:
-            path: /nas/documents
+            path: "{{host_documents_dir}}"
             src: "{{nas_host}}:/Documents"
             fstype: nfs
             state: mounted
         - name: "Automount the NAS 'Media' directory"
           mount:
-            path: /nas/media
+            path: "{{host_media_dir}}"
             src: "{{nas_host}}:/Media"
             fstype: nfs
             state: mounted
@@ -44,7 +44,7 @@
         ports: "{{expose_ports}}"
     - name: "Configure Wireguard"
       block:
-        - import_tasks: "tasks/wireguard.yml"
+        - import_tasks: "wireguard.yml"
 
 - name: "Create service config and data directories"
   tags:
@@ -59,6 +59,7 @@
   loop:
     - "/data/duplicati"
     - "{{host_config_dir}}/nextcloud"
+    - "{{host_config_dir}}/syncthing"
     - "{{host_data_dir}}/gitolite/git"
     - "{{host_data_dir}}/gitolite/keys"
     - "{{host_data_dir}}/nextcloud"
@@ -77,24 +78,27 @@
     - update
   become: yes
   block:
-    - import_tasks: "tasks/configure_web_service"
+    - import_tasks: "configure_web_service.yml"
 - name: "Deploy services"
   block:
     - name: "Deploy backup service"
       block:
-        - import_tasks: "tasks/deploy_web_service"
+        - import_tasks: "deploy_web_service.yml"
     - name: "Deploy git service"
       block:
-        - import_tasks: "tasks/deploy_git_service"
+        - import_tasks: "deploy_git_service.yml"
     - name: "Deploy mediaserver service"
       block:
-        - import_tasks: "tasks/deploy_mediaserver_service"
+        - import_tasks: "deploy_mediaserver_service.yml"
+    - name: "Deploy sync service"
+      block:
+        - import_tasks: "deploy_sync_service.yml"
     - name: "Deploy torrent service"
       block:
-        - import_tasks: "tasks/deploy_torrent_service"
+        - import_tasks: "deploy_torrent_service.yml"
     - name: "Deploy unifi service"
       block:
-        - import_tasks: "tasks/deploy_unifi_service"
+        - import_tasks: "deploy_unifi_service.yml"
     - name: "Deploy web service"
       block:
-        - import_tasks: "tasks/deploy_web_service"
+        - import_tasks: "deploy_web_service.yml"

@@ -44,16 +44,16 @@
           -e APACHE_DISABLE_REWRITE_IP=1 \
           -v {{host_config_dir}}/nextcloud:/var/www/html \
           -v {{host_data_dir}}/nextcloud:/var/www/html/data \
-          -v /nas/documents:/nas/documents \
-          -v /nas/media:/nas/media"
+          -v {{host_documents_dir}}:/nas/documents \
+          -v {{host_media_dir}}:/nas/media"
       - name: nextcloud-cron
         image: docker.io/nextcloud:19
         default_user: true
         run_args: "\
           -v {{host_config_dir}}/nextcloud:/var/www/html \
           -v {{host_data_dir}}/nextcloud:/var/www/html/data \
-          -v /nas/documents:/nas/documents \
-          -v /nas/media:/nas/media"
+          -v {{host_documents_dir}}:/nas/documents \
+          -v {{host_media_dir}}:/nas/media"
         cmd_args: "/cron.sh"
     host_mounts:
       - "{{host_config_dir}}/rproxy/Caddyfile"
