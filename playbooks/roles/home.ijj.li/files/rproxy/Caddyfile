@@ -7,7 +7,7 @@
 }
 
 # Nextcloud
-home.pshendry.com {
+home.ijj.li {
     import common
     limits {
         body / 10GB
@@ -21,12 +21,6 @@ home.pshendry.com {
     }
     proxy / 127.0.0.1:80 {
         transparent
-
-        # TODO enable/remove as required
         header_downstream Strict-Transport-Security "max-age=15552000;"
-        # header_downstream Referrer-Policy "strict-origin-when-cross-origin"
-        # header_downstream X-XSS-Protection "1; mode=block"
-        # header_downstream X-Content-Type-Options "nosniff"
-        # header_downstream X-Frame-Options "SAMEORIGIN"
     }
 }

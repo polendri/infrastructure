@@ -31,11 +31,9 @@
           -e PLEX_GID=1 \
           -e TZ={{timezone}} \
           -v {{host_data_dir}}/plex:/config \
-          -v {{host_media_dir}}:/data \
-          -v /run/plex:/transcode"
+          -v {{host_media_dir}}:/data"
     host_mounts:
       - "{{host_data_dir}}/plex"
-      - "/run/plex"
     expose_ports:
       - 3005/tcp
       - 8324/tcp

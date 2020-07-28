@@ -3,7 +3,7 @@
 service_user: srv
 service_group: users
 
-hostname: "home.pshendry.com"
+hostname: "home.ijj.li"
 timezone: "America/Toronto"
 
 # UUID of the server's internal HDD

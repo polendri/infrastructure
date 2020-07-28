@@ -1,0 +1,17 @@
+---
+- name: "Apply system upgrades"
+  tags:
+    - never
+    - upgrade
+  become: yes
+  apt:
+    update_cache: yes
+    upgrade: full
+    autoclean: yes
+    autoremove: yes
+- name: "Reboot system"
+  tags:
+    - never
+    - upgrade
+  become: yes
+  reboot:

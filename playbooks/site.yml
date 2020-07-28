@@ -5,11 +5,11 @@
 #   - provision: Provisions hosts
 #   - deploy:    Deploys services
 #   - update:    Applies updates to the services
-#   - upgrade:   Applies updates to the systems and to services
+#   - upgrade:   Applies updates to the system and to services
 #   - withdraw:  Un-deploys services
-- hosts: home.pshendry.com
+- hosts: home.ijj.li
   roles:
-    - home.pshendry.com
+    - home.ijj.li
 - hosts: ijj.li
   roles:
     - ijj.li

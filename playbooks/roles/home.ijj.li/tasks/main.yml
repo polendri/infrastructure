@@ -70,12 +70,11 @@
     - "{{host_data_dir}}/rproxy/certs"
     - "{{host_data_dir}}/rproxy/logs"
     - "{{host_data_dir}}/unifi"
-    # TODO use $XDG_RUNTIME_DIR instead of /run when using rootless podman
-    - "/run/plex"
 - name: "Configure services"
   tags:
     - deploy
     - update
+    - upgrade
   become: yes
   block:
     - import_tasks: "configure_web_service.yml"

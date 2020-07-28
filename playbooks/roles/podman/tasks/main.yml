@@ -43,6 +43,7 @@
   tags:
     - deploy
     - update
+    - upgrade
   become: yes
   systemd:
     name: "{{service_name}}"
@@ -55,6 +56,7 @@
   tags:
     - never
     - update
+    - upgrade
   become: yes
   # TODO re-enable when using rootless podman
   #become_user: "{{user}}"
@@ -64,6 +66,7 @@
   tags:
     - deploy
     - update
+    - upgrade
   become: yes
   # TODO re-enable when using rootless podman
   #become_user: "{{user}}"
@@ -96,6 +99,7 @@
   tags:
     - deploy
     - update
+    - upgrade
   block:
     - name: "Create systemd unit directory"
       file:
