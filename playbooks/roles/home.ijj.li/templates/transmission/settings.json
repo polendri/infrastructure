@@ -5,7 +5,7 @@
   "alt-speed-time-day": 127,
   "alt-speed-time-enabled": true,
   "alt-speed-time-end": 1320,
-  "alt-speed-up": 100,
+  "alt-speed-up": 0,
   "bind-address-ipv4": "{{wg1_local_ipv4}}",
   "bind-address-ipv6": "::",
   "blocklist-enabled": true,
