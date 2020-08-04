@@ -30,7 +30,9 @@
         run_args: "\
           --cap-drop all \
           -v {{host_data_dir}}/nextcloud-mariadb:/var/lib/mysql"
-        cmd_args: "--transaction-isolation=READ-COMMITTED"
+        cmd_args: "\
+          --innodb-file-per-table=1\
+          --transaction-isolation=READ-COMMITTED"
       - name: nextcloud-redis
         image: docker.io/redis:alpine
         run_args: "\
@@ -43,7 +45,7 @@
         run_args: "\
           -e APACHE_DISABLE_REWRITE_IP=1 \
           -v {{host_config_dir}}/nextcloud:/var/www/html \
-          -v {{host_data_dir}}/nextcloud:/var/www/html/data \
+          -v {{host_data_dir}}/nextcloud:/data \
           -v {{host_documents_dir}}:/nas/documents \
           -v {{host_media_dir}}:/nas/media"
       - name: nextcloud-cron
@@ -51,7 +53,7 @@
         default_user: true
         run_args: "\
           -v {{host_config_dir}}/nextcloud:/var/www/html \
-          -v {{host_data_dir}}/nextcloud:/var/www/html/data \
+          -v {{host_data_dir}}/nextcloud:/data \
           -v {{host_documents_dir}}:/nas/documents \
           -v {{host_media_dir}}:/nas/media"
         cmd_args: "/cron.sh"
