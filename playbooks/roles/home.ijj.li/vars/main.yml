@@ -53,8 +53,8 @@ wg0_private_key: !vault |
 wg1_local_ipv4: "10.68.39.219"
 wg1_local_ipv6: "fc00:bbbb:bbbb:bb01::5:27da"
 wg1_dns_ip: "193.138.218.74"
-wg1_peer_pubkey: "0WvsNA0Ui4x2EUaL+SqidU11XFK30mtUK4q0ecA9hmQ="
-wg1_peer_endpoint: "217.138.200.218:51820"
+wg1_peer_pubkey: "5BBUQJ+/BDvI4G8ybxvJihMCkJN9B54Lrm2JYK5JzmY="
+wg1_peer_endpoint: "37.120.205.194:51820"
 wg1_private_key: !vault |
   $ANSIBLE_VAULT;1.1;AES256
   30343762343231383233363364343062373033316436353737613531626431663330343361363231
