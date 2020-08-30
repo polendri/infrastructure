@@ -17,6 +17,8 @@ host_config_dir: "/data/services/config"
 
 # Directory for service data
 host_data_dir: "/data/services/data"
+# Directory for service data on SSD (limited capacity, only for select services)
+host_hot_data_dir: "/home/srv/services"
 
 host_documents_dir: "/nas/documents"
 host_media_dir: "/nas/media"

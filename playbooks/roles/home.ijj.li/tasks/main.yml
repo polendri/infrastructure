@@ -86,6 +86,9 @@
     - name: "Deploy git service"
       block:
         - import_tasks: "deploy_git_service.yml"
+    - name: "Deploy factorio service"
+      block:
+        - import_tasks: "deploy_factorio_service.yml"
     - name: "Deploy mediaserver service"
       block:
         - import_tasks: "deploy_mediaserver_service.yml"

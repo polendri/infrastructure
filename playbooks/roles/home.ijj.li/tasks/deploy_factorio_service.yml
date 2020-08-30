@@ -1,0 +1,23 @@
+# Deploys Factorio as a Podman pod
+---
+- name: "Deploy factorio pod"
+  import_role:
+    name: podman
+  vars:
+    user: "{{service_user}}"
+    group: "{{service_group}}"
+    pod_name: factorio
+    pod_create_args: "--network host"
+    pod_uid: "1"
+    pod_gid: "1"
+    pod_containers:
+      - name: factorio-server
+        image: docker.io/factoriotools/factorio:stable
+        default_user: true
+        run_args: "\
+          -v {{host_hot_data_dir}}/factorio:/factorio"
+    host_mounts:
+      - "{{host_hot_data_dir}}/factorio"
+    expose_ports:
+      - 34197/udp
+      - 27015/tcp
