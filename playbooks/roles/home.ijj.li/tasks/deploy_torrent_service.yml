@@ -14,12 +14,14 @@
           - transmission-cli
           - transmission-daemon
         state: present
-    - name: "Open firewall port for Transmission web UI"
+    - name: "Open firewall ports for Transmission"
       import_role:
         name: firewall
       vars:
         ports:
           - "9091/tcp"
+          - "51413/tcp"
+          - "51413/udp"
     - name: "Stop Transmission daemon if it exists"
       systemd:
         name: "transmission-daemon"
