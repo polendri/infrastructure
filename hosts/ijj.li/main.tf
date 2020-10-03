@@ -3,7 +3,7 @@ provider "digitalocean" {
 }
 
 resource "digitalocean_droplet" "ijj_li" {
-  image    = "ubuntu-19-10-x64"
+  image    = "ubuntu-20-04-x64"
   name     = "ijj.li"
   region   = "tor1"
   size     = "s-1vcpu-1gb"

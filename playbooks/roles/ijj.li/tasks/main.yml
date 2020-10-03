@@ -9,60 +9,52 @@
       user:
         name: "{{service_user}}"
         group: "{{service_group}}"
-- name: "Create service config and data files/directories"
+- name: "Create service config and data directories"
   tags:
     - deploy
+  become: yes
+  file:
+    path: "{{item}}"
+    state: directory
+    # TODO re-enable these ownerships when using rootless podman
+    # owner: "{{service_user}}"
+    # group: "{{service_group}}"
+  loop:
+    - "{{host_data_dir}}/caddy/certs"
+    - "{{host_data_dir}}/caddy/certs/acme/acme-v02.api.letsencrypt.org/sites/stats.ijj.li"
+    - "{{host_data_dir}}/caddy/logs"
+    - "{{host_data_dir}}/caddy/srv"
+    - "{{host_data_dir}}/goaccess/geoip"
+    - "{{host_data_dir}}/goaccess/report"
+- name: "Configure services"
+  tags:
+    - deploy
+    - update
+    - upgrade
   become: yes
   block:
     - name: "Copy Caddy configuration"
       template:
         src: "Caddyfile"
         dest: "{{host_config_dir}}/caddy/"
-        owner: "{{service_user}}"
-        group: "{{service_group}}"
-        validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
-    - name: "Create Caddy certs directory"
-      file:
-        path: "{{host_data_dir}}/caddy/certs"
-        state: directory
-        owner: "{{service_user}}"
-        group: "{{service_group}}"
-    - name: "Create Caddy logs directory"
-      file:
-        path: "{{host_data_dir}}/caddy/logs"
-        state: directory
-        owner: "{{service_user}}"
-        group: "{{service_group}}"
-    - name: "Create Caddy srv directory"
-      file:
-        path: "{{host_data_dir}}/caddy/srv"
-        state: directory
-        owner: "{{service_user}}"
-        group: "{{service_group}}"
+        # TODO re-enable these ownerships when using rootless podman
+        # owner: "{{service_user}}"
+        # group: "{{service_group}}"
+        #validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
     - name: "Copy GoAccess configuration"
       copy:
         src: "goaccess.conf"
         dest: "{{host_config_dir}}/goaccess/"
-        owner: "{{service_user}}"
-        group: "{{service_group}}"
-    - name: "Create GoAccess geoip directory"
-      file:
-        path: "{{host_data_dir}}/goaccess/geoip"
-        state: directory
-        owner: "{{service_user}}"
-        group: "{{service_group}}"
-    - name: "Create GoAccess report directory"
-      file:
-        path: "{{host_data_dir}}/goaccess/report"
-        state: directory
-        owner: "{{service_user}}"
-        group: "{{service_group}}"
+        # TODO re-enable these ownerships when using rootless podman
+        # owner: "{{service_user}}"
+        # group: "{{service_group}}"
     - name: "Copy GoAccess GeoIP database"
       copy:
         src: "GeoLite2-City.mmdb"
         dest: "{{host_data_dir}}/goaccess/geoip/"
-        owner: "{{service_user}}"
-        group: "{{service_group}}"
+        # TODO re-enable these ownerships when using rootless podman
+        # owner: "{{service_user}}"
+        # group: "{{service_group}}"
 - name: "Deploy services"
   block:
     - name: "Create web pod"
@@ -78,29 +70,24 @@
         pod_containers:
           - name: caddy
             image: quay.io/indeliblesoftware/caddy
-            run_args: "--cap-drop all \
-              --read-only \
+            default_user: true
+            run_args: "\
               --ulimit nofile=16384 \
               -v {{host_config_dir}}/caddy/Caddyfile:/etc/Caddyfile:ro \
               -v {{host_data_dir}}/caddy/certs:/etc/ssl/caddy \
               -v {{host_data_dir}}/caddy/logs:/var/log/caddy \
               -v {{host_data_dir}}/caddy/srv:/srv \
-              -v {{host_data_dir}}/goaccess/report:/srv/static/stats.ijj.li:ro
-              --tmpfs /run \
-              --tmpfs /tmp"
+              -v {{host_data_dir}}/goaccess/report:/srv/static/stats.ijj.li:ro"
             cmd_args: -agree
-          - name: goaccess
-            image: docker.io/allinurl/goaccess
-            run_args: "--cap-drop all \
-              --read-only \
-              -v {{host_config_dir}}/goaccess:/srv/data \
-              -v {{host_data_dir}}/goaccess/geoip:/srv/geoip \
-              -v {{host_data_dir}}/goaccess/report:/srv/report \
-              -v {{host_data_dir}}/caddy/certs/acme/acme-v02.api.letsencrypt.org/sites/stats.ijj.li:/srv/certs:ro
-              -v {{host_data_dir}}/caddy/logs:/srv/logs:ro \
-              --tmpfs /run \
-              --tmpfs /tmp"
-            cmd_args: --config-file=/srv/data/goaccess.conf
+          # - name: goaccess
+          #   image: docker.io/allinurl/goaccess
+          #   run_args: "\
+          #     -v {{host_config_dir}}/goaccess:/srv/data \
+          #     -v {{host_data_dir}}/goaccess/geoip:/srv/geoip \
+          #     -v {{host_data_dir}}/goaccess/report:/srv/report \
+          #     -v {{host_data_dir}}/caddy/certs/acme/acme-v02.api.letsencrypt.org/sites/stats.ijj.li:/srv/certs:ro
+          #     -v {{host_data_dir}}/caddy/logs:/srv/logs:ro"
+          #   cmd_args: --config-file=/srv/data/goaccess.conf
         host_mounts:
           - "{{host_config_dir}}/caddy"
           - "{{host_data_dir}}/caddy"
