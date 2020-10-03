@@ -4,6 +4,8 @@
     - provision
   become: yes
   block:
+    - name: "Set timezone"
+      command: "timedatectl set-timezone {{timezone}}"
     - import_tasks: "reduce_privileged_ports.yml"
     - name: "Mount storage"
       block:
