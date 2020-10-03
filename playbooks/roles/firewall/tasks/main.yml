@@ -8,7 +8,7 @@
     enabled: yes
     state: started
 - name: "Open firewall ports"
-  firewalld:
+  ansible.posix.firewalld:
     port: "{{item}}"
     permanent: yes
     immediate: yes

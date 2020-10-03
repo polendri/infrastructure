@@ -1,0 +1,16 @@
+# `home.ijj.li` `web` service
+
+Deploys a reverse proxy and all the web services that go through it:
+
+- Nextcloud
+
+## Tags
+
+- `deploy`: Deploys the service
+- `update`: Applies updates to the service
+- `withdraw`: Un-deploys the service
+
+## Notes
+
+- Accessing the `nextcloud-mariadb` database:
+  - `podman exec -it nextcloud-mariadb mysql -uroot -p`

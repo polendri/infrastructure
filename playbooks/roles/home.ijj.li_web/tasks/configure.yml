@@ -1,0 +1,29 @@
+---
+- name: "Create config & data directories"
+  tags:
+    - deploy
+  become: yes
+  file:
+    path: "{{item}}"
+    state: directory
+    # TODO re-enable these ownerships when using rootless podman
+    # owner: "{{service_user}}"
+    # group: "{{service_group}}"
+  loop:
+    - "{{host_config_dir}}/nextcloud"
+    - "{{host_data_dir}}/nextcloud"
+    - "{{host_data_dir}}/nextcloud-mariadb"
+    - "{{host_data_dir}}/nextcloud-redis"
+    - "{{host_data_dir}}/rproxy/certs"
+    - "{{host_data_dir}}/rproxy/certs"
+    - "{{host_data_dir}}/rproxy/logs"
+- name: "Copy config for 'rproxy' pod"
+  become: yes
+  copy:
+    src: "rproxy/Caddyfile"
+    dest: "{{host_config_dir}}/rproxy/"
+    # TODO: re-enable when using rootless podman
+    # owner: "{{service_user}}"
+    # group: "{{service_group}}"
+    mode: "600"
+    validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"

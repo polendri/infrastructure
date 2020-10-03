@@ -1,6 +1,5 @@
-# Deploys Factorio as a Podman pod
 ---
-- name: "Deploy factorio pod"
+- name: "Deploy pod"
   import_role:
     name: podman
   vars:

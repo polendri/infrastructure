@@ -1,0 +1,10 @@
+---
+- name: "Configure 'unifi' service"
+  tags:
+    - deploy
+    - update
+  block:
+    - import_tasks: "configure.yml"
+- name: "Deploy 'unifi' service"
+  block:
+    - import_tasks: "deploy.yml"

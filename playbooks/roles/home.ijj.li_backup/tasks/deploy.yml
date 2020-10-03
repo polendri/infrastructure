@@ -1,9 +1,7 @@
-# Deploys Duplicati as a Podman pod.
-#
 # Read-only/capability/user precautions are relaxed out of convenience since this is not a service
 # that accepts external connections.
 ---
-- name: "Deploy backup pod"
+- name: "Deploy pod"
   import_role:
     name: podman
   vars:
@@ -19,11 +17,11 @@
         default_user: true
         run_args: "\
           -v /media:/media \
-          -v /data/duplicati:/data \
+          -v {{host_duplicati_dir}}:/data \
           -v {{host_documents_dir}}:/nas/documents:ro \
           -v {{host_media_dir}}:/nas/media:ro \
           -v {{host_data_dir}}:/services:ro"
     host_mounts:
-      - "/data/duplicati"
+      - "{{host_duplicati_dir}}"
     expose_ports:
       - 8200/tcp

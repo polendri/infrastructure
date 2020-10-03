@@ -1,0 +1,10 @@
+---
+- name: "Configure 'factorio' service"
+  tags:
+    - deploy
+    - update
+  block:
+    - import_tasks: "configure.yml"
+- name: "Deploy 'factorio' service"
+  block:
+    - import_tasks: "deploy.yml"

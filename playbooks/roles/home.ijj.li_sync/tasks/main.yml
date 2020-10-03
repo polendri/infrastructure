@@ -1,0 +1,10 @@
+---
+- name: "Configure 'sync' service"
+  tags:
+    - deploy
+    - update
+  block:
+    - import_tasks: "configure.yml"
+- name: "Deploy 'sync' service"
+  block:
+    - import_tasks: "deploy.yml"

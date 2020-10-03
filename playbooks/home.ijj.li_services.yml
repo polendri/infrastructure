@@ -1,0 +1,9 @@
+---
+- import_playbook: home.ijj.li_services_backup.yml
+- import_playbook: home.ijj.li_services_factorio.yml
+- import_playbook: home.ijj.li_services_git.yml
+- import_playbook: home.ijj.li_services_mediaserver.yml
+- import_playbook: home.ijj.li_services_sync.yml
+- import_playbook: home.ijj.li_services_torrent.yml
+- import_playbook: home.ijj.li_services_unifi.yml
+- import_playbook: home.ijj.li_services_web.yml

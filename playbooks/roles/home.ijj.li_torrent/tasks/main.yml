@@ -1,0 +1,4 @@
+---
+- name: "Deploy 'torrent' service"
+  block:
+    - import_tasks: "deploy.yml"

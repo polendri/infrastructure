@@ -1,0 +1,5 @@
+---
+- hosts: home.ijj.li
+  roles:
+    - home.ijj.li
+- import_playbook: home.ijj.li_services.yml

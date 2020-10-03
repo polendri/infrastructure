@@ -18,6 +18,8 @@ purposes, but also meant to be clear and readable enough to be useful as a refer
    1. Initialize Terraform
       - `terraform init`
 1. Set up Ansible:
+   1. Install Ansible dependencies:
+      - `ansible-galaxy install -r requirements.yml`
    1. Provide the Ansible Vault password in a file named `.vault_password` in the project root. Ensure its permissions
       are set to `0600`.
 

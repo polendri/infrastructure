@@ -1,0 +1,4 @@
+---
+- hosts: ijj.li
+  roles:
+    - ijj.li

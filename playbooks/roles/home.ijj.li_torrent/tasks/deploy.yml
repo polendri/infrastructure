@@ -1,4 +1,3 @@
-# Installs the Transmission torrent client.
 ---
 - name: "Deploy Transmission"
   tags:

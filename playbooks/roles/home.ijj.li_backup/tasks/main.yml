@@ -1,0 +1,10 @@
+---
+- name: "Configure 'backup' service"
+  tags:
+    - deploy
+    - update
+  block:
+    - import_tasks: "configure.yml"
+- name: "Deploy 'backup' service"
+  block:
+    - import_tasks: "deploy.yml"

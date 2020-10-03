@@ -1,0 +1,6 @@
+---
+host_data_dir: "/data/services/data"
+host_media_dir: "/nas/media"
+timezone: "America/Toronto"
+service_user: srv
+service_group: users

@@ -1,6 +1,5 @@
-# Deploys Syncthing as a Podman pod
 ---
-- name: "Deploy sync pod"
+- name: "Deploy pod"
   import_role:
     name: podman
   vars:

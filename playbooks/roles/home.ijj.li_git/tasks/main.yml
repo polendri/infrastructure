@@ -1,0 +1,10 @@
+---
+- name: "Configure 'git' service"
+  tags:
+    - deploy
+    - update
+  block:
+    - import_tasks: "configure.yml"
+- name: "Deploy 'git' service"
+  block:
+    - import_tasks: "deploy.yml"

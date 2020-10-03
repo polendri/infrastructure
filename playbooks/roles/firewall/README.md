@@ -2,8 +2,6 @@
 
 Enables the firewall and opens only specified ports.
 
-## Tags
-
 ## Variables
 
 | Variable | Description                             | Default |

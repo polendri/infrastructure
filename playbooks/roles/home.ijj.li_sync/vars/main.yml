@@ -1,0 +1,6 @@
+---
+host_config_dir: "/data/services/config"
+host_documents_dir: "/nas/documents"
+host_media_dir: "/nas/media"
+service_user: srv
+service_group: users

@@ -1,0 +1,11 @@
+- name: "Create config & data directories"
+  become: yes
+  file:
+    path: "{{item}}"
+    state: directory
+    # TODO re-enable these ownerships when using rootless podman
+    # owner: "{{service_user}}"
+    # group: "{{service_group}}"
+  loop:
+    - "{{host_data_dir}}/gitolite/git"
+    - "{{host_data_dir}}/gitolite/keys"
