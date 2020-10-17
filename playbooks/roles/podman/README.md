@@ -7,6 +7,8 @@ Runs and manages a Podman pod.
 - `provision`
 - `deploy`
 - `update`
+- `start`
+- `stop`
 - `withdraw`
 
 ## Variables

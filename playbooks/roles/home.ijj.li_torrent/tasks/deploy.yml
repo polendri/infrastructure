@@ -1,5 +1,5 @@
 ---
-- name: "Deploy Transmission"
+- name: "Install Transmission"
   tags:
     - deploy
   become: yes
@@ -21,17 +21,34 @@
           - "9091/tcp"
           - "51413/tcp"
           - "51413/udp"
-    - name: "Stop Transmission daemon if it exists"
+- name: "Deploy Transmission"
+  become: yes
+  block:
+    - name: "Stop Transmission daemon"
+      tags:
+        - deploy
+        - stop
       systemd:
         name: "transmission-daemon"
         state: stopped
       failed_when: false
     - name: "Copy Transmission configuration file"
+      tags:
+        - deploy
       template:
         src: "transmission/settings.json"
         dest: "/var/lib/transmission-daemon/.config/transmission-daemon/"
-    - name: "Enable and start Transmission daemon"
+    - name: "Enable Transmission daemon"
+      tags:
+        - deploy
       systemd:
         name: "transmission-daemon"
         enabled: yes
-        state: restarted
+    - name: "Start Transmission daemon"
+      tags:
+        - deploy
+        - start
+      systemd:
+        name: "transmission-daemon"
+        enabled: yes
+        state: started

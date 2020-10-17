@@ -30,7 +30,6 @@
   tags:
     - deploy
     - update
-    - upgrade
   become: yes
   block:
     - name: "Copy Caddy configuration"

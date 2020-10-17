@@ -8,6 +8,8 @@ Deploys a reverse proxy and all the web services that go through it:
 
 - `deploy`: Deploys the service
 - `update`: Applies updates to the service
+- `start`: Starts the service
+- `stop`: Stops the service
 - `withdraw`: Un-deploys the service
 
 ## Notes

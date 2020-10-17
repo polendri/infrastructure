@@ -39,24 +39,31 @@
           file:
             path: "/var/lib/systemd/linger/{{user}}"
             state: touch
-- name: "Stop and disable existing systemd service"
+- name: "Stop systemd service"
   tags:
     - deploy
+    - stop
     - update
-    - upgrade
   become: yes
   systemd:
     name: "{{service_name}}"
-    enabled: no
     state: stopped
-  register: stop_systemd_service
+  # Allow for when the service doesn't exist (first run)
+  failed_when: false
+- name: "Disable systemd service"
+  tags:
+    - deploy
+    - update
+  become: yes
+  systemd:
+    name: "{{service_name}}"
+    enabled: yes
   # Allow for when the service doesn't exist (first run)
   failed_when: false
 - name: "Update '{{pod_name}}' pod images"
   tags:
     - never
     - update
-    - upgrade
   become: yes
   # TODO re-enable when using rootless podman
   #become_user: "{{user}}"
@@ -66,7 +73,6 @@
   tags:
     - deploy
     - update
-    - upgrade
   become: yes
   # TODO re-enable when using rootless podman
   #become_user: "{{user}}"
@@ -99,7 +105,6 @@
   tags:
     - deploy
     - update
-    - upgrade
   block:
     - name: "Create systemd unit directory"
       file:
@@ -127,12 +132,25 @@
       become: yes
       systemd:
         daemon_reload: yes
-    - name: "Enable and start service"
-      become: yes
-      systemd:
-        name: "{{service_name}}"
-        enabled: yes
-        state: started
+- name: "Enable systemd service"
+  tags:
+    - deploy
+    - update
+  become: yes
+  systemd:
+    name: "{{service_name}}"
+    enabled: yes
+- name: "Start systemd service"
+  tags:
+    - deploy
+    - start
+    - update
+  become: yes
+  systemd:
+    name: "{{service_name}}"
+    state: started
+  # Allow for when the service doesn't exist (first run)
+  failed_when: false
 - name: "Configure firewall for '{{pod_name}}' pod"
   tags:
     - deploy

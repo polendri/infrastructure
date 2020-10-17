@@ -1,5 +1,7 @@
 ---
-- import_playbook: home.ijj.li_services_backup.yml
+# Backup service deliberately left out since it's usually managed separately (for example, this
+# playbook is used to bring down all services before backing up their data directories)
+# - import_playbook: home.ijj.li_services_backup.yml
 - import_playbook: home.ijj.li_services_factorio.yml
 - import_playbook: home.ijj.li_services_git.yml
 - import_playbook: home.ijj.li_services_mediaserver.yml
