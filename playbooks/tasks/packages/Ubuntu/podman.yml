@@ -6,7 +6,7 @@
   block:
     - name: "Add Kubic apt key"
       apt_key:
-        url: "https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_{{ansible_distribution_version}}/Release.key"
+        url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ansible_distribution_version}}/Release.key"
     - name: "Add Kubic apt repository"
       apt_repository:
         repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ansible_distribution_version}}/ /"
