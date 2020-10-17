@@ -165,6 +165,7 @@
     - withdraw
   block:
     - name: "Disable and stop {{pod_name}} service"
+      become: yes
       service:
         name: "{{service_name}}"
         enabled: no
