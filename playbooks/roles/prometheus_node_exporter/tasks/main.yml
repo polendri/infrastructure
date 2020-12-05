@@ -1,0 +1,13 @@
+---
+- name: "Open firewall port for node_exporter"
+  import_role:
+    name: firewall
+  vars:
+    ports:
+      - "9100/tcp"
+- name: "Install node_exporter"
+  tags:
+    - deploy
+    - update
+  import_role:
+    name: cloudalchemy.node-exporter

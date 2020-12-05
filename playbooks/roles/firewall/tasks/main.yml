@@ -1,13 +1,16 @@
 - name: "Install firewalld"
+  become: yes
   package:
     name: firewalld
     state: present
 - name: "Enable and start firewalld service"
+  become: yes
   service:
     name: firewalld
     enabled: yes
     state: started
 - name: "Open firewall ports"
+  become: yes
   ansible.posix.firewalld:
     port: "{{item}}"
     permanent: yes

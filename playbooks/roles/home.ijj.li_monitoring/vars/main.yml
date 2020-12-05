@@ -1,0 +1,4 @@
+---
+host_config_dir: "/data/services/config"
+service_user: srv
+service_group: users

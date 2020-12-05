@@ -1,0 +1,27 @@
+---
+- name: "Deploy pod"
+  import_role:
+    name: podman
+  vars:
+    user: "{{service_user}}"
+    group: "{{service_group}}"
+    pod_name: monitoring
+    # Use host networking in order to access the host's node_exporter service. Surely there's a way
+    # to make just that host service accessible inside the container?
+    pod_create_args: "--network host"
+    pod_uid: "1"
+    pod_gid: "1"
+    pod_containers:
+      - name: grafana
+        image: docker.io/grafana/grafana
+        default_user: true
+        run_args: "-v {{host_config_dir}}/grafana:/var/lib/grafana"
+      - name: prometheus
+        image: quay.io/prometheus/prometheus
+        default_user: true
+        run_args: "-v {{host_config_dir}}/prometheus:/etc/prometheus"
+    host_mounts:
+      - "{{host_config_dir}}/prometheus"
+    expose_ports:
+      - 3000/tcp
+      - 9090/tcp

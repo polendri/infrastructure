@@ -1,0 +1,33 @@
+- name: "Create config & data directories"
+  block:
+    - name: "Create Grafana config directory"
+      become: yes
+      file:
+        path: "{{host_config_dir}}/grafana"
+        state: directory
+        owner: "472"
+        group: "root"
+        # TODO re-enable these ownerships when using rootless podman
+        # owner: "{{service_user}}"
+        # group: "{{service_group}}"
+    - name: "Create Prometheus config directory"
+      become: yes
+      file:
+        path: "{{host_config_dir}}/prometheus"
+        state: directory
+        owner: "65534"
+        group: "65534"
+        # TODO re-enable these ownerships when using rootless podman
+        # owner: "{{service_user}}"
+        # group: "{{service_group}}"
+- name: "Copy Prometheus configuration"
+  become: yes
+  template:
+    src: "prometheus.yml"
+    dest: "{{host_config_dir}}/prometheus/"
+    mode: "600"
+    owner: "65534"
+    group: "65534"
+    # TODO re-enable these ownerships when using rootless podman
+    # owner: "{{service_user}}"
+    # group: "{{service_group}}"

@@ -15,7 +15,6 @@
         image: quay.io/indeliblesoftware/caddy
         run_args: "\
           --read-only \
-          --cap-drop all \
           --ulimit nofile=16384 \
           -v {{host_config_dir}}/rproxy/Caddyfile:/etc/Caddyfile:ro \
           -v {{host_data_dir}}/rproxy/certs:/etc/ssl/caddy \
@@ -24,7 +23,6 @@
       - name: nextcloud-mariadb
         image: docker.io/mariadb
         run_args: "\
-          --cap-drop all \
           -v {{host_data_dir}}/nextcloud-mariadb:/var/lib/mysql"
         cmd_args: "\
           --innodb-file-per-table=1\
@@ -33,10 +31,9 @@
         image: docker.io/redis:alpine
         run_args: "\
           --read-only \
-          --cap-drop all \
           -v {{host_data_dir}}/nextcloud-redis:/data"
       - name: nextcloud
-        image: docker.io/nextcloud:19
+        image: docker.io/nextcloud:20
         default_user: true
         run_args: "\
           -e APACHE_DISABLE_REWRITE_IP=1 \

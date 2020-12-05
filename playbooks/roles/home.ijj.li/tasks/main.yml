@@ -42,3 +42,8 @@
     - name: "Configure Wireguard"
       block:
         - import_tasks: "wireguard.yml"
+- name: "Install Prometheus Node Exporter"
+  tags:
+    - deploy
+  import_role:
+    name: prometheus_node_exporter
