@@ -1,26 +1,27 @@
 # {{ansible_managed | comment}}
 
+{
+    http_port 8080
+    https_port 8443
+}
+
 # Common configuration
 (common) {
-    tls paul@pshendry.com
-    log / /var/log/caddy/access.log "{host} {remote} - {user} [{when}] \"{method} {uri} {proto}\" {status} {size}"
+    tls paul@ijj.li
+    log {
+        output file /data/logs/access.log
+    }
 }
 
 # Nextcloud
 home.ijj.li {
+    @dav {
+        path_regexp ^\/\.well-known\/(?:cal|card)dav$
+    }
+
     import common
-    limits {
-        body / 10GB
-    }
-    timeouts {
-        read 10m
-    }
-    rewrite {
-        r ^/\.well-known/(cal|card)dav$
-        to /remote.php/dav/
-    }
-    proxy / 127.0.0.1:80 {
-        transparent
-        header_downstream Strict-Transport-Security "max-age=15552000;"
+    redir @dav /remote.php/dav/ permanent
+    reverse_proxy 127.0.0.1:80 {
+        header_down Strict-Transport-Security "max-age=15552000;"
     }
 }

@@ -12,14 +12,14 @@
     pod_gid: "1"
     pod_containers:
       - name: rproxy
-        image: quay.io/indeliblesoftware/caddy
+        image: docker.io/caddy
+        default_user: true
         run_args: "\
           --read-only \
           --ulimit nofile=16384 \
-          -v {{host_config_dir}}/rproxy/Caddyfile:/etc/Caddyfile:ro \
-          -v {{host_data_dir}}/rproxy/certs:/etc/ssl/caddy \
-          -v {{host_data_dir}}/rproxy/logs:/var/log/caddy"
-        cmd_args: -agree
+          -v {{host_config_dir}}/rproxy/Caddyfile:/etc/caddy/Caddyfile:ro \
+          -v {{host_data_dir}}/rproxy/config:/config \
+          -v {{host_data_dir}}/rproxy/data:/data"
       - name: nextcloud-mariadb
         image: docker.io/mariadb
         run_args: "\

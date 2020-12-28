@@ -1,3 +1,5 @@
+# Caddy built with the caddy-exec module and with Git installed
+
 FROM caddy:builder-alpine AS builder
 
 RUN xcaddy build --with github.com/abiosoft/caddy-exec

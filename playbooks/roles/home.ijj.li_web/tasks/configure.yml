@@ -14,9 +14,8 @@
     - "{{host_data_dir}}/nextcloud"
     - "{{host_data_dir}}/nextcloud-mariadb"
     - "{{host_data_dir}}/nextcloud-redis"
-    - "{{host_data_dir}}/rproxy/certs"
-    - "{{host_data_dir}}/rproxy/certs"
-    - "{{host_data_dir}}/rproxy/logs"
+    - "{{host_data_dir}}/rproxy/config"
+    - "{{host_data_dir}}/rproxy/data"
 - name: "Copy config for 'rproxy' pod"
   become: yes
   copy:
@@ -26,4 +25,4 @@
     # owner: "{{service_user}}"
     # group: "{{service_group}}"
     mode: "600"
-    validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
+    validate: "podman run --rm -v %s:/etc/caddy/Caddyfile docker.io/caddy caddy validate --config /etc/caddy/Caddyfile"
