@@ -16,6 +16,9 @@
   file:
     path: "{{item}}"
     state: directory
+    owner: root
+    group: root
+    recurse: yes
     # TODO re-enable these ownerships when using rootless podman
     # owner: "{{service_user}}"
     # group: "{{service_group}}"
@@ -24,8 +27,8 @@
     - "{{host_data_dir}}/caddy/certs/acme/acme-v02.api.letsencrypt.org/sites/stats.ijj.li"
     - "{{host_data_dir}}/caddy/logs"
     - "{{host_data_dir}}/caddy/srv"
-    - "{{host_data_dir}}/goaccess/geoip"
-    - "{{host_data_dir}}/goaccess/report"
+    # - "{{host_data_dir}}/goaccess/geoip"
+    # - "{{host_data_dir}}/goaccess/report"
 - name: "Configure services"
   tags:
     - deploy
@@ -36,24 +39,30 @@
       template:
         src: "Caddyfile"
         dest: "{{host_config_dir}}/caddy/"
+        owner: root
+        group: root
         # TODO re-enable these ownerships when using rootless podman
         # owner: "{{service_user}}"
         # group: "{{service_group}}"
         #validate: "podman run --rm -v %s:/etc/Caddyfile quay.io/indeliblesoftware/caddy -conf /etc/Caddyfile -validate"
-    - name: "Copy GoAccess configuration"
-      copy:
-        src: "goaccess.conf"
-        dest: "{{host_config_dir}}/goaccess/"
-        # TODO re-enable these ownerships when using rootless podman
-        # owner: "{{service_user}}"
-        # group: "{{service_group}}"
-    - name: "Copy GoAccess GeoIP database"
-      copy:
-        src: "GeoLite2-City.mmdb"
-        dest: "{{host_data_dir}}/goaccess/geoip/"
-        # TODO re-enable these ownerships when using rootless podman
-        # owner: "{{service_user}}"
-        # group: "{{service_group}}"
+    # - name: "Copy GoAccess configuration"
+    #   copy:
+    #     src: "goaccess.conf"
+    #     dest: "{{host_config_dir}}/goaccess/"
+    #     owner: root
+    #     group: root
+    #     # TODO re-enable these ownerships when using rootless podman
+    #     # owner: "{{service_user}}"
+    #     # group: "{{service_group}}"
+    # - name: "Copy GoAccess GeoIP database"
+    #   copy:
+    #     src: "GeoLite2-City.mmdb"
+    #     dest: "{{host_data_dir}}/goaccess/geoip/"
+    #     owner: root
+    #     group: root
+    #     # TODO re-enable these ownerships when using rootless podman
+    #     # owner: "{{service_user}}"
+    #     # group: "{{service_group}}"
 - name: "Deploy services"
   block:
     - name: "Create web pod"
@@ -63,20 +72,22 @@
         user: "{{service_user}}"
         group: "{{service_group}}"
         pod_name: web
-        pod_create_args: -p 80:8080 -p 443:8443 -p 7890:7890
+        #pod_create_args: -p 80:8080 -p 443:8443 -p 7890:7890
+        pod_create_args: -p 80:8080 -p 443:8443
         pod_uid: "1"
         pod_gid: "1"
         pod_containers:
           - name: caddy
             image: quay.io/indeliblesoftware/caddy
             default_user: true
-            run_args: "\
+            run_args:
+              "\
               --ulimit nofile=16384 \
               -v {{host_config_dir}}/caddy/Caddyfile:/etc/Caddyfile:ro \
               -v {{host_data_dir}}/caddy/certs:/etc/ssl/caddy \
               -v {{host_data_dir}}/caddy/logs:/var/log/caddy \
-              -v {{host_data_dir}}/caddy/srv:/srv \
-              -v {{host_data_dir}}/goaccess/report:/srv/static/stats.ijj.li:ro"
+              -v {{host_data_dir}}/caddy/srv:/srv"
+              # -v {{host_data_dir}}/goaccess/report:/srv/static/stats.ijj.li:ro"
             cmd_args: -agree
           # - name: goaccess
           #   image: docker.io/allinurl/goaccess
@@ -90,9 +101,9 @@
         host_mounts:
           - "{{host_config_dir}}/caddy"
           - "{{host_data_dir}}/caddy"
-          - "{{host_config_dir}}/goaccess"
-          - "{{host_data_dir}}/goaccess"
+          # - "{{host_config_dir}}/goaccess"
+          # - "{{host_data_dir}}/goaccess"
         expose_ports:
           - 80/tcp
           - 443/tcp
-          - 7890/tcp
+          # - 7890/tcp

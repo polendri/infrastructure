@@ -7,6 +7,7 @@
         state: directory
         owner: "472"
         group: "root"
+        recurse: yes
         # TODO re-enable these ownerships when using rootless podman
         # owner: "{{service_user}}"
         # group: "{{service_group}}"
@@ -17,6 +18,7 @@
         state: directory
         owner: "65534"
         group: "65534"
+        recurse: yes
         # TODO re-enable these ownerships when using rootless podman
         # owner: "{{service_user}}"
         # group: "{{service_group}}"
@@ -28,6 +30,7 @@
     mode: "600"
     owner: "65534"
     group: "65534"
+    recurse: yes
     # TODO re-enable these ownerships when using rootless podman
     # owner: "{{service_user}}"
     # group: "{{service_group}}"
