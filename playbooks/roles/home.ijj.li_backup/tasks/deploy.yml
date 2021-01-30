@@ -8,7 +8,7 @@
     user: "{{service_user}}"
     group: "{{service_group}}"
     pod_name: backup
-    pod_create_args: "-p 8200"
+    pod_create_args: "-p 8200:8200"
     pod_uid: "1"
     pod_gid: "1"
     pod_containers:

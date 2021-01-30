@@ -7,8 +7,8 @@
     group: "{{service_group}}"
     pod_name: sync
     pod_create_args: "
-      -p 8384/tcp \
-      -p 22000/tcp"
+      -p 8384:8384/tcp \
+      -p 22000:22000/tcp"
     pod_uid: "1"
     pod_gid: "1"
     pod_containers:

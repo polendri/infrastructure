@@ -7,13 +7,13 @@
     group: "{{service_group}}"
     pod_name: unifi
     pod_create_args: "\
-      -p 3478/udp \
-      -p 6789 \
-      -p 8080 \
-      -p 8443 \
-      -p 8880 \
-      -p 8843 \
-      -p 10001/udp"
+      -p 3478:3478/udp \
+      -p 6789:6789 \
+      -p 8080:8080 \
+      -p 8443:8443 \
+      -p 8880:8880 \
+      -p 8843:8843 \
+      -p 10001:10001/udp"
     pod_uid: "1"
     pod_gid: "1"
     pod_containers:
