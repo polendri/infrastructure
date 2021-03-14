@@ -4,12 +4,6 @@
 - name: "Install Podman"
   become: yes
   block:
-    - name: "Add Kubic apt key"
-      apt_key:
-        url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ansible_distribution_version}}/Release.key"
-    - name: "Add Kubic apt repository"
-      apt_repository:
-        repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ansible_distribution_version}}/ /"
     - name: "Allow unprivileged use of ping"
       sysctl:
         name: net.ipv4.ping_group_range
@@ -23,3 +17,4 @@
           - fuse-overlayfs # For volume mounting
           - slirp4netns
           - podman
+          - runc
