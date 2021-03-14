@@ -50,3 +50,19 @@
     expose_ports:
       - 80/tcp
       - 443/tcp
+- name: Add cron job to run Nextcloud's cron.php
+  tags:
+    - deploy
+  become: yes
+  ansible.builtin.cron:
+    name: "run Nextcloud config.php"
+    minute: "*/5"
+    job: "podman exec -u www-data nextcloud php cron.php"
+- name: Remove cron job to run Nextcloud's cron.php
+  tags:
+    - never
+    - withdraw
+  become: yes
+  ansible.builtin.cron:
+    name: "run Nextcloud config.php"
+    state: absent
