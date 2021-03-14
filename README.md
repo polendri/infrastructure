@@ -63,7 +63,7 @@ Other tags available are:
 - `provision`: Install packages and configure hosts
 - `deploy`: Deploy services on hosts
 - `update`: Update services on hosts
-- `upgrade`: Upgrade host systems and update services on hosts
+- `upgrade`: Apply host system updates
 
 ### Storing secrets in Ansible playbooks
 
