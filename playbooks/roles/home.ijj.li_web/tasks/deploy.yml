@@ -33,7 +33,7 @@
           --read-only \
           -v {{host_data_dir}}/nextcloud-redis:/data"
       - name: nextcloud
-        image: docker.io/nextcloud:20
+        image: docker.io/nextcloud:21
         default_user: true
         run_args: "\
           -e APACHE_DISABLE_REWRITE_IP=1 \
