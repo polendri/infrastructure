@@ -19,8 +19,8 @@
       vars:
         ports:
           - "9091/tcp"
-          - "51413/tcp"
-          - "51413/udp"
+          - "59999/tcp"
+          - "59999/udp"
 - name: "Deploy Transmission"
   become: yes
   block:
