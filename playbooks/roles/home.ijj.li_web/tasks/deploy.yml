@@ -21,7 +21,7 @@
           -v {{host_data_dir}}/rproxy/config:/config \
           -v {{host_data_dir}}/rproxy/data:/data"
       - name: nextcloud-mariadb
-        image: docker.io/mariadb
+        image: docker.io/mariadb:10.5
         run_args: "\
           -v {{host_data_dir}}/nextcloud-mariadb:/var/lib/mysql"
         cmd_args: "\
