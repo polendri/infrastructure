@@ -1,4 +1,0 @@
----
-- hosts: home.ijj.li
-  roles:
-    - home.ijj.li_factorio

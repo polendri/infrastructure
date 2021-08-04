@@ -1,8 +1,0 @@
-- name: "Create config & data directories"
-  become: yes
-  file:
-    path: "{{host_hot_data_dir}}/factorio"
-    state: directory
-    # TODO re-enable these ownerships when using rootless podman
-    # owner: "{{service_user}}"
-    # group: "{{service_group}}"
