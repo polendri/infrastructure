@@ -2,8 +2,8 @@
 collections:
   - ansible.posix
   - community.crypto
-  # Just to fix error from cloudalchemy.node-exporter trying to use "seport" module
+  # Just to fix error from cloudalchemy.node_exporter trying to use "seport" module
   - community.general
 
 roles:
-  - src: cloudalchemy.node-exporter
+  - src: cloudalchemy.node_exporter

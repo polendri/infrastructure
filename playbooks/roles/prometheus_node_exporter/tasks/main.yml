@@ -10,4 +10,4 @@
     - deploy
     - update
   import_role:
-    name: cloudalchemy.node-exporter
+    name: cloudalchemy.node_exporter
